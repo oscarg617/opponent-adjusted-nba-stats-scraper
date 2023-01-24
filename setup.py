@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Oscar Gutierrez Altamirano",
     author_email="oscargutierreza617@gmail.com",
-    description="A Python client for scraping data from stats.nba.com",
+    description="A Python client for scraping data from stats.nba.com and opponent-adjusting players'gi stats.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/oscarg617/opponent_adjusted_nba_scraper",
