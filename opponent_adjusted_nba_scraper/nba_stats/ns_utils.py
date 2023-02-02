@@ -1,36 +1,40 @@
 import time
-import requests
+from requests import get
 import pandas as pd
+from opponent_adjusted_nba_scraper.constants import TEAMS, TEAM_TO_TEAM_ABBR
 
 try:
-    from constants import TEAMS
     import request_constants as rc
 except:
-    from opponent_adjusted_nba_scraper.constants import TEAMS
-    import opponent_adjusted_nba_scraper.request_constants as rc
+    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
 
 
-def total_possessions(_name, logs, team_dict, season_type="Playoffs"):
+def total_possessions(name, logs, team_dict, season_type="Playoffs"):
     total_poss = 0
     for year in team_dict:
         for opp_team in team_dict[year]:
             opp_id = 1610612700 + int(TEAMS[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
-            response = requests.get(url, headers=rc.STANDARD_HEADER, params=rc.player_per_poss_param(opp_id, year, season_type), stream=True)
-            time.sleep(.600)
-            response_json = response.json()
-            frame = pd.DataFrame(response_json['resultSets'][0]['rowSet'])
-            if frame.empty: return
-            frame.columns = response_json['resultSets'][0]['headers']
-            rslt_df_large = frame[frame['PLAYER_NAME'] == _name]
-            if rslt_df_large.empty: return
-            min_per_poss = rslt_df_large.iloc[0]['MIN']
-            filter_season = logs[logs['SEASON_YEAR'] == year]
-            filter_both = filter_season[filter_season['MATCHUP'] == opp_team]
-            min_played = filter_both['MIN'].sum()
+            df = get_dataframe(url, rc.STANDARD_HEADER, rc.player_per_poss_param(opp_id, year, season_type))
+            if df.empty: return
+            df = df.query('PLAYER_NAME == @name')
+            min_per_poss = df.iloc[0]['MIN']
+            filter = logs.query('SEASON_YEAR == @year')
+            filter = logs.query('MATCHUP == @opp_team')
+            min_played = filter['MIN'].sum()
             poss = min_played / min_per_poss
             total_poss += round(poss)
     return total_poss
+
+def get_dataframe(url, header, param):
+    response = get(url, headers=header, params=param, stream=True)
+    if response.status_code != 200:
+        exit(f"{response.status_code} Gateway Timeout")
+    response_json = response.json()
+    df = pd.DataFrame(response_json['resultSets'][0]['rowSet'])
+    if df.empty: return
+    df.columns = response_json['resultSets'][0]['headers']
+    return df
 
 def teams_df_to_dict(df):
     if not df.empty:

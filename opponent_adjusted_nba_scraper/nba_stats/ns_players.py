@@ -3,37 +3,43 @@ from requests import get
 import time
 
 try: 
-    from utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict
-    from teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+    from ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
+    from ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
     import request_constants as rc
 except:
-    from opponent_adjusted_nba_scraper.utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict
-    from opponent_adjusted_nba_scraper.teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
-    import opponent_adjusted_nba_scraper.request_constants as rc
+    from opponent_adjusted_nba_scraper.nba_stats.ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
+    from opponent_adjusted_nba_scraper.nba_stats.ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
 
 def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
     curr_year = first_year
-    frames = []
+    dfs = []
     while curr_year <= last_year:
         year = format_year(curr_year)
         url = 'https://stats.nba.com/stats/playergamelogs'
-        response = get(url, headers=rc.STANDARD_HEADER, params=rc.player_logs_params(year, season_type), stream=True)
-        time.sleep(.600)
-        response_json = response.json()
-        frame = pd.DataFrame(response_json['resultSets'][0]['rowSet'])
-        frame.columns = response_json['resultSets'][0]['headers']
-        frame = frame[frame['PLAYER_NAME'] == name]
-        frame = frame[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'WL', 'MIN', 'FGM', 'FGA', 'FG_PCT', 
-        'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PTS']]
-        def last_three_char(string):
-            return string[-3:]
-        ds = frame['MATCHUP'].apply(last_three_char)
-        new_df = ds.to_frame()
-        frame = frame.assign(MATCHUP=new_df['MATCHUP'])
-        frame = frame[::-1]
-        frames.append(frame)
+        params = rc.player_logs_params(year, season_type)
+        df = get_dataframe(url, rc.STANDARD_HEADER, params)
+        print(name)
+        
+        df = df.query('PLAYER_NAME == @name')
+        df = (df[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'WL', 'MIN', 'FGM', 'FGA', 'FG_PCT', 
+        'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF', 'PTS', 'PLUS_MINUS']]
+            .rename(columns={'TEAM_ABBREVIATION': 'TEAM_ABBR', 'PLUS_MINUS':'+/-', 'FG_PCT': 'FG%', 'FG3M': '3PM', 'FG3A': '3PA', 
+            'FG3_PCT': '3P%', 'FT_PCT': 'FT%'})
+            .drop('TEAM_NAME', axis=1)[::-1]
+        )
+        df['MATCHUP'] = df['MATCHUP'].str[-3:]
+        dfs.append(df)
         curr_year += 1
-    result = pd.concat(frames)
+    result = pd.concat(dfs)
+    result = result.reset_index(drop=True)
+    convert_dict = {
+        'FGM': 'int32', 'FGA': 'int32', '3PM': 'int32', '3PA': 'int32', 'FTA': 'int32', 'FTM': 'int32', 'OREB': 'int32', 'DREB': 'int32',
+        'REB': 'int32', 'AST': 'int32', 'TOV': 'int32', 'STL': 'int32', 'BLK': 'int32', 'PF': 'int32', 'PTS': 'int32', '+/-': 'int32',
+        'WL' : 'category'
+    }
+    result = result.astype(convert_dict)
+    result.index += 1
     return result
 
 def player_stats(name, first_year, last_year, min_drtg, max_drtg, data_format="OPP_ADJ", season_type="Playoffs", printStats=True):
