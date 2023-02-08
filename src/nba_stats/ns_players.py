@@ -1,15 +1,8 @@
 import pandas as pd
 from requests import get
-import time
-
-try: 
-    from ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
-    from ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
-    import request_constants as rc
-except:
-    from opponent_adjusted_nba_scraper.nba_stats.ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
-    from opponent_adjusted_nba_scraper.nba_stats.ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
-    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
+from nba_stats.ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
+from nba_stats.ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+import nba_stats.request_constants as rc
 
 def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
     curr_year = first_year
@@ -19,8 +12,6 @@ def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
         url = 'https://stats.nba.com/stats/playergamelogs'
         params = rc.player_logs_params(year, season_type)
         df = get_dataframe(url, rc.STANDARD_HEADER, params)
-        print(name)
-        
         df = df.query('PLAYER_NAME == @name')
         df = (df[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'WL', 'MIN', 'FGM', 'FGA', 'FG_PCT', 
         'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF', 'PTS', 'PLUS_MINUS']]
@@ -40,6 +31,7 @@ def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
     }
     result = result.astype(convert_dict)
     result.index += 1
+    print(result.info())
     return result
 
 def player_stats(name, first_year, last_year, min_drtg, max_drtg, data_format="OPP_ADJ", season_type="Playoffs", printStats=True):

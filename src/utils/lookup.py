@@ -4,6 +4,7 @@ import unidecode, os
     Bounded levenshtein algorithm credited to user amirouche on stackoverflow.
     Implementation borrowed from https://stackoverflow.com/questions/59686989/levenshtein-distance-with-bound-limit
 """
+
 def levenshtein(s1, s2, maximum):  
     if len(s1) > len(s2):
         s1, s2 = s2, s1
@@ -32,7 +33,6 @@ def lookup(player, ask_matches = True):
     path = os.path.join(os.path.dirname(__file__), 'names.txt')
     normalized = unidecode.unidecode(player)
     matches = []
-    
     with open(path) as file:
         Lines = file.readlines()
         for line in Lines:

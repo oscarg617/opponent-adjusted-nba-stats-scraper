@@ -1,12 +1,9 @@
-import time
 from requests import get
 import pandas as pd
-from opponent_adjusted_nba_scraper.constants import TEAMS, TEAM_TO_TEAM_ABBR
 
-try:
-    import request_constants as rc
-except:
-    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
+import nba_stats.request_constants as rc
+import nba_stats.request_constants as rc
+from utils.constants import TEAMS, TEAM_TO_TEAM_ABBR
 
 
 def total_possessions(name, logs, team_dict, season_type="Playoffs"):

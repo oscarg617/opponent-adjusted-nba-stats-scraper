@@ -1,7 +1,7 @@
 import unittest
 from src.team_stats import teams_within_drtg, filter_logs_through_teams, filter_teams_through_logs
 from src.player_stats import player_game_logs
-from src.utils import teams_df_to_dict
+from src.utils.util import teams_df_to_dict
 
 class TestTeamStats(unittest.TestCase):
     def test_team_within_drtg(self):
