@@ -1,7 +1,7 @@
 import pandas as pd
-from requests import get
-from nba_stats.ns_utils import true_shooting_percentage, format_year, total_possessions, teams_df_to_dict, get_dataframe
-from nba_stats.ns_teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+from utils.util import teams_df_to_dict, filter_logs_through_teams, filter_teams_through_logs
+from nba_stats.ns_utils import true_shooting_percentage, format_year, total_possessions, get_dataframe
+from nba_stats.ns_teams import teams_within_drtg
 import nba_stats.request_constants as rc
 
 def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
@@ -13,10 +13,10 @@ def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
         params = rc.player_logs_params(year, season_type)
         df = get_dataframe(url, rc.STANDARD_HEADER, params)
         df = df.query('PLAYER_NAME == @name')
-        df = (df[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'WL', 'MIN', 'FGM', 'FGA', 'FG_PCT', 
+        df = (df[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'MIN', 'FGM', 'FGA', 'FG_PCT', 
         'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF', 'PTS', 'PLUS_MINUS']]
-            .rename(columns={'TEAM_ABBREVIATION': 'TEAM_ABBR', 'PLUS_MINUS':'+/-', 'FG_PCT': 'FG%', 'FG3M': '3PM', 'FG3A': '3PA', 
-            'FG3_PCT': '3P%', 'FT_PCT': 'FT%'})
+            .rename(columns={'SEASON_YEAR':'SEASON', 'TEAM_ABBREVIATION': 'TEAM', 'PLUS_MINUS':'+/-', 'FG_PCT': 'FG%', 
+            'FG3M': '3PM', 'FG3A': '3PA', 'FG3_PCT': '3P%', 'FT_PCT': 'FT%'})
             .drop('TEAM_NAME', axis=1)[::-1]
         )
         df['MATCHUP'] = df['MATCHUP'].str[-3:]
@@ -27,7 +27,6 @@ def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
     convert_dict = {
         'FGM': 'int32', 'FGA': 'int32', '3PM': 'int32', '3PA': 'int32', 'FTA': 'int32', 'FTM': 'int32', 'OREB': 'int32', 'DREB': 'int32',
         'REB': 'int32', 'AST': 'int32', 'TOV': 'int32', 'STL': 'int32', 'BLK': 'int32', 'PF': 'int32', 'PTS': 'int32', '+/-': 'int32',
-        'WL' : 'category'
     }
     result = result.astype(convert_dict)
     result.index += 1
@@ -44,11 +43,11 @@ def player_stats(name, first_year, last_year, min_drtg, max_drtg, data_format="O
     opp_true_shooting_sum = 0
     for year in teams_dict:
         for opp_team in teams_dict[year]:
-            logs_in_year = logs[logs['SEASON_YEAR'] == year]
+            logs_in_year = logs[logs['SEASON'] == year]
             logs_vs_team = logs_in_year[logs_in_year['MATCHUP'] == opp_team]
-            opp_drtg_sum += ((teams_df[teams_df['TEAM_ABBR'] == opp_team].DEF_RATING.values[0]) * logs_vs_team.shape[0])
-            teams_in_year = teams_df[teams_df['SEASON_YEAR'] == year]
-            opp_true_shooting_sum += ((teams_in_year[teams_in_year['TEAM_ABBR'] == opp_team].OPP_TS_PCT.values[0]) * logs_vs_team.shape[0])
+            opp_drtg_sum += ((teams_df[teams_df['TEAM'] == opp_team].DRTG.values[0]) * logs_vs_team.shape[0])
+            teams_in_year = teams_df[teams_df['SEASON'] == year]
+            opp_true_shooting_sum += ((teams_in_year[teams_in_year['TEAM'] == opp_team].OPP_TS.values[0]) * logs_vs_team.shape[0])
     opp_drtg = round((opp_drtg_sum / logs.shape[0]), 1)
     opp_true_shooting = (opp_true_shooting_sum / logs.shape[0]) * 100
     player_true_shooting = true_shooting_percentage(logs.PTS.sum(), logs.FGA.sum(), logs.FTA.sum()) * 100

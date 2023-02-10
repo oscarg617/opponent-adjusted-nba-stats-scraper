@@ -4,9 +4,6 @@ import pandas as pd
 import unicodedata, unidecode
 import pandas as pd
 
-from utils.constants import TEAMS
-import nba_stats.request_constants as rc
-
 def get_game_suffix(date, team1, team2):
     r = get(f'https://www.basketball-reference.com/boxscores/index.fcgi?year={date.year}&month={date.month}&day={date.day}')
     suffix = None
@@ -51,6 +48,7 @@ def get_player_suffix(name):
     else:
         split_normalized_name = normalized_name.split(' ')
         if len(split_normalized_name) < 2:
+            print("vevevev")
             return None
         initial = normalized_name.split(' ')[1][0].lower()
         all_names = name.split(' ')
@@ -121,3 +119,39 @@ def remove_accents(name, team, season_end_year):
                 max_matches = matches
                 best_match = p
     return best_match
+
+def teams_df_to_dict(df):
+    if not df.empty:
+        df_list = list(zip(df.SEASON, df.TEAM_ABBR))
+        rslt = {}
+        length = len(df_list)
+        for index in range(length):
+            if df_list[index][0] in rslt:
+                rslt[df_list[index][0]].append(df_list[index][1])
+            else:
+                rslt[df_list[index][0]] = [df_list[index][1]]
+        return rslt
+    else:
+        return None
+
+def filter_logs_through_teams(logs_df, teams_dict):
+    dfs = []
+    for year in teams_dict:
+        length_value = len(teams_dict[year])
+        for team_index in range(length_value):
+            abbr = teams_dict[year][team_index]
+            df_team = logs_df[logs_df['MATCHUP'] == abbr]
+            df_year = df_team[df_team['SEASON'] == year]
+            dfs.append(df_year)
+    result = pd.concat(dfs)
+    return result
+
+def filter_teams_through_logs(logs_df, teams_df):
+    dfs = []
+    for log in range(logs_df.shape[0]):
+        df_team = teams_df[teams_df['TEAM'] == logs_df.iloc[log].MATCHUP]
+        df_year = df_team[df_team['SEASON'] == logs_df.iloc[log].SEASON]    
+        dfs.append(df_year)
+    all_dfs = pd.concat(dfs)
+    result = all_dfs.drop_duplicates()
+    return result
