@@ -4,7 +4,7 @@ import numpy as np
 from utils.constants import TEAM_TO_TEAM_ABBR
 from bball_ref.br_utils import get_dataframe
 
-def teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Playoffs'):
+def teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Regular Season'):
     curr = first_year
     dfs = []
     while curr <= last_year:

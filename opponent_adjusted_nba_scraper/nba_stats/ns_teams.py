@@ -32,24 +32,3 @@ def teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Pl
     result = result.rename(columns={"DEF_RATING": "DRTG", "OPP_TS_PCT": "OPP_TS"})
     return result
 
-def filter_logs_through_teams(logs_df, teams_dict):
-    dfs = []
-    for year in teams_dict:
-        length_value = len(teams_dict[year])
-        for team_index in range(length_value):
-            abbr = teams_dict[year][team_index]
-            df_team = logs_df[logs_df['MATCHUP'] == abbr]
-            df_year = df_team[df_team['SEASON'] == year]
-            dfs.append(df_year)
-    result = pd.concat(dfs)
-    return result
-
-def filter_teams_through_logs(logs_df, teams_df):
-    dfs = []
-    for log in range(logs_df.shape[0]):
-        df_team = teams_df[teams_df['TEAM'] == logs_df.iloc[log].MATCHUP]
-        df_year = df_team[df_team['SEASON'] == logs_df.iloc[log].SEASON]    
-        dfs.append(df_year)
-    all_dfs = pd.concat(dfs)
-    result = all_dfs.drop_duplicates()
-    return result

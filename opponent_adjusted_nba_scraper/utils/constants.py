@@ -45,5 +45,5 @@ TEAM_TO_TEAM_ABBR = {
         'WASHINGTON WIZARDS' : 'WAS',
         }
 
-DESIRED_LOG_COLUMNS = ['SEASON', 'TEAM_ABBR', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB',
+DESIRED_LOG_COLUMNS = ['SEASON', 'DATE', 'NAME', 'TEAM', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB',
 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'GmSc', '+/-']
