@@ -22,6 +22,7 @@ TEAM_TO_TEAM_ABBR = {
         'LA CLIPPERS': 'LAC',
         'LOS ANGELES LAKERS': 'LAL',
         'LA LAKERS': 'LAL',
+        'KANSAS CITY KINGS': 'KCK',
         'MEMPHIS GRIZZLIES': 'MEM',
         'VANCOUVER GRIZZLIES' : 'VAN',
         'MIAMI HEAT': 'MIA',
@@ -42,6 +43,8 @@ TEAM_TO_TEAM_ABBR = {
         'TORONTO RAPTORS' : 'TOR',
         'UTAH JAZZ' : 'UTA',
         'NEW ORLEANS JAZZ' : 'NOJ',
+        'VANCOUVER GRIZZLIES': 'VAN',
+        'WASHINGTON BULLETS': 'WSB',
         'WASHINGTON WIZARDS' : 'WAS',
         }
 
