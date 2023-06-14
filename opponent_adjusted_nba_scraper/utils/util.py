@@ -220,7 +220,7 @@ def add_names():
             file.write(unidecode.unidecode(name).replace("*", "") + "\n")
     file.close()
 
-def get_names(url, id):
+def get_names(url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
     r = get(url, headers=headers)
     if r.status_code != 200:
