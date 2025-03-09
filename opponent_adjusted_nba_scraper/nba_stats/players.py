@@ -1,8 +1,15 @@
 import pandas as pd
-from utils.util import teams_df_to_dict, filter_logs_through_teams, filter_teams_through_logs
-from nba_stats.utils import true_shooting_percentage, format_year, total_possessions, get_dataframe
-from nba_stats.teams import teams_within_drtg
-import nba_stats.request_constants as rc
+
+try:
+    from utils.util import teams_df_to_dict, filter_logs_through_teams, filter_teams_through_logs
+    from nba_stats.utils import true_shooting_percentage, format_year, total_possessions, get_dataframe
+    from nba_stats.teams import teams_within_drtg
+    import nba_stats.request_constants as rc
+except:
+    from opponent_adjusted_nba_scraper.utils.util import teams_df_to_dict, filter_logs_through_teams, filter_teams_through_logs
+    from opponent_adjusted_nba_scraper.nba_stats.utils import true_shooting_percentage, format_year, total_possessions, get_dataframe
+    from opponent_adjusted_nba_scraper.nba_stats.teams import teams_within_drtg
+    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
 
 def player_game_logs(name, first_year, last_year, season_type="Playoffs"):
     curr_year = first_year

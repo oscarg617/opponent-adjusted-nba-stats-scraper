@@ -1,8 +1,12 @@
 from requests import get
 import pandas as pd
 
-import nba_stats.request_constants as rc
-from utils.constants import TEAMS
+try:
+    import nba_stats.request_constants as rc
+    from utils.constants import TEAMS
+except:
+    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
+    from opponent_adjusted_nba_scraper.utils.constants import TEAMS
 
 def add_possessions(name, logs, team_dict, season_type="Playoffs"):
     total_poss = 0

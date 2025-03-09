@@ -1,8 +1,12 @@
 import requests
 import pandas as pd
 import numpy as np
-from utils.constants import TEAM_TO_TEAM_ABBR
-from bball_ref.utils import get_dataframe
+try:
+    from utils.constants import TEAM_TO_TEAM_ABBR
+    from bball_ref.utils import get_dataframe
+except:
+    from opponent_adjusted_nba_scraper.utils.constants import TEAM_TO_TEAM_ABBR
+    from opponent_adjusted_nba_scraper.bball_ref.utils import get_dataframe
 
 def teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Regular Season'):
     curr = first_year

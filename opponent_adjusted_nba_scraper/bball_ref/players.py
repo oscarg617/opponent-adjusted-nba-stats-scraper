@@ -1,11 +1,18 @@
 import requests
 import pandas as pd
 import numpy as np
-from utils.lookup import lookup
-from utils.util import get_player_suffix, player_stats as ps
-from bball_ref.utils import get_dataframe, add_possessions
-from utils.constants import DESIRED_LOG_COLUMNS
-from bball_ref.teams import teams_within_drtg
+try:
+    from utils.lookup import lookup
+    from utils.util import get_player_suffix, player_stats as ps
+    from bball_ref.utils import get_dataframe, add_possessions
+    from utils.constants import DESIRED_LOG_COLUMNS
+    from bball_ref.teams import teams_within_drtg
+except:
+    from opponent_adjusted_nba_scraper.utils.lookup import lookup
+    from opponent_adjusted_nba_scraper.utils.util import get_player_suffix, player_stats as ps
+    from opponent_adjusted_nba_scraper.bball_ref.utils import get_dataframe, add_possessions
+    from opponent_adjusted_nba_scraper.utils.constants import DESIRED_LOG_COLUMNS
+    from opponent_adjusted_nba_scraper.bball_ref.teams import teams_within_drtg
 
 def player_game_logs(_name, first_year, last_year, season_type="Playoffs"):
     name = lookup(_name, ask_matches=False)

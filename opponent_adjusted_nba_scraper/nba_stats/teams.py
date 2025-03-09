@@ -1,8 +1,13 @@
 import pandas as pd
 
-from nba_stats.utils import format_year, get_dataframe
-import nba_stats.request_constants as rc
-from utils.constants import TEAM_TO_TEAM_ABBR
+try:
+    from nba_stats.utils import format_year, get_dataframe
+    import nba_stats.request_constants as rc
+    from utils.constants import TEAM_TO_TEAM_ABBR
+except:
+    from opponent_adjusted_nba_scraper.nba_stats.utils import format_year, get_dataframe
+    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
+    from opponent_adjusted_nba_scraper.utils.constants import TEAM_TO_TEAM_ABBR
 
 def teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Playoffs'):
     curr_year = first_year
