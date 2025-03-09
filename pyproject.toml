@@ -4,10 +4,12 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opponent_adjusted_nba_scraper"
-version = "0.0.1"
+version = "1.0.3"
 authors = [
   { name="Oscar Gutierrez Altamirano", email="oscargutierreza617@gmail.com" },
 ]
+dynamic = ["dependencies", "keywords", "license"]
+
 description = "A small example package"
 readme = "README.md"
 requires-python = ">=3.7"
@@ -17,6 +19,5 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 
-[project.urls]
-"Homepage" = "https://github.com/pypa/sampleproject"
-"Bug Tracker" = "https://github.com/pypa/sampleproject/issues"
+[tool.hatch.build.targets.wheel]
+  packages = ["opponent_adjusted_nba_scraper"]
