@@ -3,7 +3,7 @@
 Usage
 
 ```
-from opponent_adjusted_nba_scraper.teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+from opponent-adjusted-nba-scraper.teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
 ```
 
 ### `teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Playoffs')`
