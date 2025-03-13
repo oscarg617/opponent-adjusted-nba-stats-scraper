@@ -8,7 +8,7 @@ except:
     import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
     from opponent_adjusted_nba_scraper.utils.constants import _TEAMS
 
-def _add_possessions(name, logs, team_dict):
+def _add_possessions(name, logs, team_dict, season_type):
     total_poss = 0
     for year in team_dict:
         for opp_team in team_dict[year]:
