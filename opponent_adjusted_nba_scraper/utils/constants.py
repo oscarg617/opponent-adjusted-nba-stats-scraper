@@ -1,9 +1,9 @@
-TEAMS = {"ATL":'37', "BOS":'38', "BKN":'51', "CHA":'66', "CHI":'41', "CLE":'39', "DAL":'42', "DEN":'43', "DET":'65', "GSW":'44', "HOU":'45', 
+_TEAMS = {"ATL":'37', "BOS":'38', "BKN":'51', "CHA":'66', "CHI":'41', "CLE":'39', "DAL":'42', "DEN":'43', "DET":'65', "GSW":'44', "HOU":'45', 
 "IND":'54', "LAC":'46', "LAL":'47', "MEM":'63', "MIA":'48', "MIL":'49', "MIN":'50', "NOP":'40', "NYK":'52', "OKC":'60', "ORL":'53', "PHI":'55',
 "PHX":'56', "POR":'57', "SAC":'58', "SAS":'59', "TOR":'61', "UTA":'62', "WAS":'64', "NJN":"51", "CHO":"66", "VAN":"63", "NOH":"40", 
 "SEA":"60", "NOK":'40'}
 
-TEAM_TO_TEAM_ABBR = {
+_TEAM_TO_TEAM_ABBR = {
         'ATLANTA HAWKS': 'ATL',
         'BOSTON CELTICS': 'BOS',
         'BROOKLYN NETS': 'BKN',
@@ -36,7 +36,7 @@ TEAM_TO_TEAM_ABBR = {
         'SEATTLE SUPERSONICS' : 'SEA',
         'ORLANDO MAGIC' : 'ORL',
         'PHILADELPHIA 76ERS' : 'PHI',
-        'PHOENIX SUNS' : 'PHX',
+        'PHOENIX SUNS' : 'PHO',
         'PORTLAND TRAIL BLAZERS' : 'POR',
         'SACRAMENTO KINGS' : 'SAC',
         'SAN ANTONIO SPURS' : 'SAS',
@@ -48,5 +48,20 @@ TEAM_TO_TEAM_ABBR = {
         'WASHINGTON WIZARDS' : 'WAS',
         }
 
-DESIRED_LOG_COLUMNS = ['SEASON', 'DATE', 'NAME', 'TEAM', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB',
+_DESIRED_LOG_COLUMNS = ['SEASON', 'DATE', 'NAME', 'TEAM', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%', '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB',
 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF', 'PTS', 'GmSc', '+/-']
+
+class Mode:
+    per_game = "PerGame"
+    per_100_poss = "Per100Poss"
+    pace_adj = "PaceAdjusted"
+    opp_adj = "OpponentAdjusted"
+    opp_pace_adj = "OpponentAndPaceAdjusted"
+
+    default = per_game
+
+class SeasonType:
+    regular_season = "RegularSeason"
+    playoffs = "Playoffs"
+
+    default = regular_season
