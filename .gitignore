@@ -162,3 +162,5 @@ cython_debug/
 # Extra
 todo.txt
 *.csv
+*.toml
+setup.py

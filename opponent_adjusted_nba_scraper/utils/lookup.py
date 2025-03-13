@@ -5,7 +5,7 @@ import unidecode, os
     Implementation borrowed from https://stackoverflow.com/questions/59686989/levenshtein-distance-with-bound-limit
 """
 
-def levenshtein(s1, s2, maximum):  
+def _levenshtein(s1, s2, maximum):  
     if len(s1) > len(s2):
         s1, s2 = s2, s1
 
@@ -29,7 +29,7 @@ def levenshtein(s1, s2, maximum):
     are returned for final user approval.
     Implementation borrowed from https://github.com/vishaalagartha/basketball_reference_scraper
 """
-def lookup(player, ask_matches = True):
+def _lookup(player, ask_matches = True):
     path = os.path.join(os.path.dirname(__file__), 'names.txt')
     normalized = unidecode.unidecode(player)
     matches = []
@@ -41,7 +41,7 @@ def lookup(player, ask_matches = True):
                 account for possible misspellings or lingering non-unidecoded 
                 characters.
             """
-            dist = levenshtein(normalized.lower(), line[:-1].lower(), 5)
+            dist = _levenshtein(normalized.lower(), line[:-1].lower(), 5)
             if dist >= 0:
                 matches += [(line[:-1], dist)]
 

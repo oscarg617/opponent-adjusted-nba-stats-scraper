@@ -3,18 +3,18 @@ import pandas as pd
 
 try:
     import nba_stats.request_constants as rc
-    from utils.constants import TEAMS
+    from utils.constants import _TEAMS
 except:
     import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
-    from opponent_adjusted_nba_scraper.utils.constants import TEAMS
+    from opponent_adjusted_nba_scraper.utils.constants import _TEAMS
 
-def add_possessions(name, logs, team_dict, season_type="Playoffs"):
+def _add_possessions(name, logs, team_dict):
     total_poss = 0
     for year in team_dict:
         for opp_team in team_dict[year]:
-            opp_id = 1610612700 + int(TEAMS[opp_team])
+            opp_id = 1610612700 + int(_TEAMS[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
-            df = get_dataframe(url, rc.STANDARD_HEADER, rc.player_per_poss_param(opp_id, year, season_type))
+            df = _get_dataframe(url, rc.STANDARD_HEADER, rc.player_per_poss_param(opp_id, year, season_type))
             if df.empty: return
             df = df.query('PLAYER_NAME == @name')
             min_per_poss = df.iloc[0]['MIN']
@@ -25,7 +25,7 @@ def add_possessions(name, logs, team_dict, season_type="Playoffs"):
             total_poss += round(poss)
     return total_poss
 
-def get_dataframe(url, header, param):
+def _get_dataframe(url, header, param):
     response = get(url, headers=header, params=param)
     if response.status_code != 200:
         exit(f"{response.status_code} Gateway Timeout")
@@ -36,7 +36,7 @@ def get_dataframe(url, header, param):
     df.columns = response_json['resultSets'][0]['headers']
     return df
 
-def format_year(end_year):
+def _format_year(end_year):
     start_year = end_year - 1
     end_year_format = end_year % 100
     if end_year_format >= 10:

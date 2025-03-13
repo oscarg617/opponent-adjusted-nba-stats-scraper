@@ -1,13 +1,15 @@
 import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+import time
+from tqdm import tqdm
 
 try:
-    from utils.util import get_game_suffix
+    from utils.util import _get_game_suffix
 except:
-    from opponent_adjusted_nba_scraper.utils.util import get_game_suffix
+    from opponent_adjusted_nba_scraper.utils.util import _get_game_suffix
 
-def get_dataframe(url, id):
+def _get_dataframe(url, id):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
     r = requests.get(url, headers=headers)
     if r.status_code != 200:
@@ -27,12 +29,12 @@ def get_dataframe(url, id):
         rows = rows[1:]
     return pd.DataFrame(rows, columns=header[1:])
 
-def add_possessions(name, logs, team_dict, season_type="Playoffs"):
+def _add_possessions(name, logs, team_dict, season_type):
     total_poss = 0
     logs["DATE"] = pd.to_datetime(logs["DATE"])
-    logs["POSSESSIONS"] = ""
-    for i in range(1, len(logs) + 1):
-        logs.loc[i, "GAME_SUFFIX"] = get_game_suffix(logs.loc[i, "DATE"], logs.loc[i, "TEAM"], logs.loc[i, "MATCHUP"])
+    logs["GAME_SUFFIX"] = ""
+    for i in tqdm(range(1, len(logs) + 1), desc='Loading player possessions...', ncols=75):
+        logs.loc[i, "GAME_SUFFIX"] = _get_game_suffix(logs.loc[i, "DATE"], logs.loc[i, "TEAM"], logs.loc[i, "MATCHUP"])
         suffix = logs.loc[i, "GAME_SUFFIX"]
         url = f'https://www.basketball-reference.com{suffix}'
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
@@ -42,8 +44,7 @@ def add_possessions(name, logs, team_dict, season_type="Playoffs"):
         r = r.text.replace("<!--","").replace("-->","")
         soup = BeautifulSoup(r, features="lxml")
         pace = soup.find("td", attrs={"data-stat":"pace"}).text
-        logs.loc[i, "POSSESSIONS"] = (logs.loc[i, "MIN"] / 48) * float(pace)
-    logs["POSSESSIONS"] = logs["POSSESSIONS"].astype("float64")
-    logs["PTS_PER_100"] = (logs["PTS"] * 100) / logs["POSSESSIONS"]
+        total_poss += (logs.loc[i, "MIN"] / 48) * float(pace)
+        time.sleep(21)
     logs = logs.drop(columns=["GAME_SUFFIX"])
-    return logs
+    return total_poss
