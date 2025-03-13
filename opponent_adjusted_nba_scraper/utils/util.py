@@ -4,7 +4,17 @@ import pandas as pd
 import unicodedata, unidecode
 import pandas as pd
 
-def get_game_suffix(date, team1, team2):
+try:
+    from utils.constants import Mode
+except:
+    from opponent_adjusted_nba_scraper.utils.constants import Mode
+
+
+'''
+Credit to https://github.com/vishaalagartha for the following four functions
+'''
+
+def _get_game_suffix(date, team1, team2):
     r = get(f'https://www.basketball-reference.com/boxscores/index.fcgi?year={date.year}&month={date.month}&day={date.day}')
     suffix = None
     if r.status_code==200:
@@ -22,7 +32,7 @@ def get_game_suffix(date, team1, team2):
     catalogue. Added functionality so that players with abbreviated names
     can still have a suffix created.
 """
-def create_last_name_part_of_suffix(potential_last_names):
+def _create_last_name_part_of_suffix(potential_last_names):
     last_names = ''.join(potential_last_names)
     if len(last_names) <= 5:
         return last_names[:].lower()
@@ -41,7 +51,7 @@ def create_last_name_part_of_suffix(potential_last_names):
     consistent.
     This implementation dropped player lookup fail count from 306 to 35 to 0.
 """
-def get_player_suffix(name):
+def _get_player_suffix(name):
     normalized_name = unidecode.unidecode(unicodedata.normalize('NFD', name).encode('ascii', 'ignore').decode("utf-8"))
     if normalized_name == 'Metta World Peace' :
         suffix = '/players/a/artesro01.html'
@@ -55,12 +65,12 @@ def get_player_suffix(name):
         first_name = all_names[0]
         other_names = all_names[1:]
         other_names_search = other_names
-        last_name_part = create_last_name_part_of_suffix(other_names)
+        last_name_part = _create_last_name_part_of_suffix(other_names)
         suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
     player_r = get(f'https://www.basketball-reference.com{suffix}')
     while player_r.status_code == 404:
         other_names_search.pop(0)
-        last_name_part = create_last_name_part_of_suffix(other_names_search)
+        last_name_part = _create_last_name_part_of_suffix(other_names_search)
         initial = last_name_part[0].lower()
         suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
         player_r = get(f'https://www.basketball-reference.com{suffix}')
@@ -91,7 +101,7 @@ def get_player_suffix(name):
                     suffix = f"/players/{initial}/{last_name_part}{first_name_part}{player_number}.html"
                 else:
                     other_names_search.pop(0)
-                    last_name_part = create_last_name_part_of_suffix(other_names_search)
+                    last_name_part = _create_last_name_part_of_suffix(other_names_search)
                     initial = last_name_part[0].lower()
                     suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
 
@@ -100,7 +110,7 @@ def get_player_suffix(name):
     return None
 
 
-def remove_accents(name, team, season_end_year):
+def _remove_accents(name, team, season_end_year):
     alphabet = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ')
     if len(set(name).difference(alphabet))==0:
         return name
@@ -119,59 +129,73 @@ def remove_accents(name, team, season_end_year):
                 best_match = p
     return best_match
 
-def player_stats(logs, teams_df, add_possessions, data_format="OPP_ADJ", season_type="Playoffs", printStats=True):
-    teams_df = filter_teams_through_logs(logs, teams_df)
-    teams_dict = teams_df_to_dict(teams_df)
-    logs = filter_logs_through_teams(logs, teams_dict)
-    print(logs)
-    print(teams_dict)
-    return
+def _calculate_stats(name, logs, teams_df, add_possessions, first_year, last_year, data_format, season_type, printStats):
+
+    teams_df = _filter_teams_through_logs(logs, teams_df)
+    teams_dict = _teams_df_to_dict(teams_df)
+    logs = _filter_logs_through_teams(logs, teams_dict)
+
     opp_drtg_sum = 0
     opp_true_shooting_sum = 0
     for year in teams_dict:
         for opp_team in teams_dict[year]:
             logs_in_year = logs[logs['SEASON'] == year]
             logs_vs_team = logs_in_year[logs_in_year['MATCHUP'] == opp_team]
-            opp_drtg_sum += ((teams_df[teams_df['TEAM'] == opp_team].DRTG.values[0]) * logs_vs_team.shape[0])
+            opp_drtg_sum += (float(teams_df[teams_df['TEAM'] == opp_team].DRTG.values[0]) * logs_vs_team.shape[0])
             teams_in_year = teams_df[teams_df['SEASON'] == year]
-            opp_true_shooting_sum += ((teams_in_year[teams_in_year['TEAM'] == opp_team].OPP_TS.values[0]) * logs_vs_team.shape[0])
+            opp_true_shooting_sum += (float(teams_in_year[teams_in_year['TEAM'] == opp_team].OPP_TS.values[0]) * logs_vs_team.shape[0])
     opp_drtg = round((opp_drtg_sum / logs.shape[0]), 1)
     opp_true_shooting = (opp_true_shooting_sum / logs.shape[0]) * 100
-    player_true_shooting = true_shooting_percentage(logs.PTS.sum(), logs.FGA.sum(), logs.FTA.sum()) * 100
+    player_true_shooting = _true_shooting_percentage(logs.PTS.sum(), logs.FGA.sum(), logs.FTA.sum()) * 100
     relative_true_shooting = round(player_true_shooting - opp_true_shooting, 1)
-    if data_format == 'PER_GAME':
-        points = f"{round(logs['PTS'].mean(), 1)} points per game"
-        rebounds = f"{round(logs['REB'].mean(), 1)} rebounds per game"
-        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
-    elif data_format == 'PER_POSS':
-        possessions = total_possessions(name, logs, teams_dict)
-        points = f"{round((logs['PTS'].sum() / possessions) * 100, 1)} points per 100 possessions"
-        rebounds = f"{round((logs['REB'].sum() / possessions) * 100, 1)} rebounds per 100 possessions"
-        assists = f"{round((logs['AST'].sum() / possessions) * 100, 1)} assists per 100 possessions"
-    elif data_format == 'OPP_ADJ':
-        points = f"{round((logs['PTS'].mean() * (110 / opp_drtg)), 1)} opponent-adjusted points per game"
-        rebounds = f"{round(logs['REB'].mean(), 1)} rebounds per game"
-        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
-    elif data_format == 'OPP_INF':
-        possessions = total_possessions(name, logs, teams_dict)
-        points_per_100 = (logs['PTS'].sum() / possessions) * 100
-        points = f"{round(((logs['MIN'].mean() / 48) * points_per_100 * (110 / opp_drtg)), 1)} opponent and inflation-adjusted points per game"
-        rebounds = f"{round(logs['REB'].mean(), 1)} rebounds per game"
-        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
-    #if printStats:
-    #    if first_year == last_year:
-    #        print(f'In {first_year}, {name} averaged:')
-    #    else:
-    #        print(f'From {first_year} to {last_year}, {name} averaged:')
-    #    print(points + "\n" + rebounds + '\n' + assists)
-    #    if relative_true_shooting > 0:
-    #        print(f'on {round(player_true_shooting, 1)} TS% (+{relative_true_shooting} rTS%)')
-    #    else:
-    #        print(f'on {round(player_true_shooting, 1)} TS% ({relative_true_shooting} rTS%)')
-    #    print(f'Opponent DRTG: {opp_drtg}')
-    return [points, rebounds, assists, player_true_shooting, relative_true_shooting, opp_drtg]
 
-def teams_df_to_dict(df):
+    if data_format == Mode.per_game:
+        points = f"{round(logs['PTS'].mean(), 1)} points per game"
+        rebounds = f"{round(logs['TRB'].mean(), 1)} rebounds per game"
+        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
+    elif data_format == Mode.per_100_poss:
+        possessions = add_possessions(name, logs, teams_dict, season_type)
+        points = f"{round((logs['PTS'].sum() / possessions) * 100, 1)} points per 100 possessions"
+        rebounds = f"{round((logs['TRB'].sum() / possessions) * 100, 1)} rebounds per 100 possessions"
+        assists = f"{round((logs['AST'].sum() / possessions) * 100, 1)} assists per 100 possessions"
+    elif data_format == Mode.pace_adj:
+        possessions = add_possessions(name, logs, teams_dict, season_type)
+        min_ratio = logs['MIN'].mean() / 48
+        points = f"{round((min_ratio * (logs['PTS'].sum() / possessions) * 100), 1)} pace-adjusted points per game"
+        rebounds = f"{round((min_ratio * (logs['TRB'].sum() / possessions) * 100), 1)} pace-adjusted rebounds per game"
+        assists = f"{round((min_ratio * (logs['AST'].sum() / possessions) * 100), 1)} pace-adjusted assists per game"
+    elif data_format == Mode.opp_adj:
+        points = f"{round((logs['PTS'].mean() * (110 / opp_drtg)), 1)} opponent-adjusted points per game"
+        rebounds = f"{round(logs['TRB'].mean(), 1)} rebounds per game"
+        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
+    elif data_format == Mode.opp_pace_adj:
+        possessions = add_possessions(name, logs, teams_dict, season_type)
+        points_per_100 = (logs['PTS'].sum() / possessions) * 100
+        points = f"{round(((logs['MIN'].mean() / 48) * points_per_100 * (110 / opp_drtg)), 1)} opponent and pace-adjusted points per game"
+        rebounds = f"{round(logs['TRB'].mean(), 1)} rebounds per game"
+        assists = f"{round(logs['AST'].mean(), 1)} assists per game"
+
+    if printStats:
+       if first_year == last_year:
+           print(f'In {first_year}, {name} averaged:')
+       else:
+           print(f'From {first_year} to {last_year}, {name} averaged:')
+       print(points + "\n" + rebounds + '\n' + assists)
+       if relative_true_shooting > 0:
+           print(f'on {round(player_true_shooting, 1)} TS% (+{relative_true_shooting} rTS%)')
+       else:
+           print(f'on {round(player_true_shooting, 1)} TS% ({relative_true_shooting} rTS%)')
+       print(f'Opponent DRTG: {opp_drtg}')
+    return {
+        "points": points,
+        "rebounds": rebounds, 
+        "assists": assists, 
+        "TS%": player_true_shooting, 
+        "rTS%": relative_true_shooting, 
+        "DRTG": opp_drtg
+    }
+
+def _teams_df_to_dict(df):
     if not df.empty:
         df_list = list(zip(df.SEASON, df.TEAM))
         rslt = {}
@@ -185,7 +209,7 @@ def teams_df_to_dict(df):
     else:
         return None
 
-def filter_logs_through_teams(logs_df, teams_dict):
+def _filter_logs_through_teams(logs_df, teams_dict):
     dfs = []
     for year in teams_dict:
         length_value = len(teams_dict[year])
@@ -197,7 +221,7 @@ def filter_logs_through_teams(logs_df, teams_dict):
     result = pd.concat(dfs)
     return result
 
-def filter_teams_through_logs(logs_df, teams_df):
+def _filter_teams_through_logs(logs_df, teams_df):
     dfs = []
     for log in range(logs_df.shape[0]):
         df_team = teams_df[teams_df['TEAM'] == logs_df.iloc[log].MATCHUP]
@@ -207,20 +231,20 @@ def filter_teams_through_logs(logs_df, teams_df):
     result = all_dfs.drop_duplicates()
     return result
 
-def true_shooting_percentage(pts, fga, fta):
+def _true_shooting_percentage(pts, fga, fta):
     return pts / (2 * (fga + (0.44 * fta)))
 
-def add_names():
+def _add_names():
     url = 'https://www.basketball-reference.com/players/'
     alphabet= ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
     file = open("names.txt", "w")
     for letter in alphabet:
-        names = get_names(url + letter + '/', "players")
+        names = _get_names(url + letter + '/', "players")
         for name in names:
             file.write(unidecode.unidecode(name).replace("*", "") + "\n")
     file.close()
 
-def get_names(url):
+def _get_names(url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
     r = get(url, headers=headers)
     if r.status_code != 200:
