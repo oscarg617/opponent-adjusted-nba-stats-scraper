@@ -1,30 +1,33 @@
 import requests
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 try:
-    from utils.lookup import lookup
-    from utils.util import get_player_suffix, player_stats as ps
-    from bball_ref.utils import get_dataframe, add_possessions
-    from utils.constants import DESIRED_LOG_COLUMNS
-    from bball_ref.teams import teams_within_drtg
+    from utils.constants import Mode
+    from utils.lookup import _lookup
+    from utils.util import _get_player_suffix, _calculate_stats
+    from bball_ref.utils import _get_dataframe, _add_possessions
+    from utils.constants import _DESIRED_LOG_COLUMNS
+    from bball_ref.teams import _teams_within_drtg
 except:
-    from opponent_adjusted_nba_scraper.utils.lookup import lookup
-    from opponent_adjusted_nba_scraper.utils.util import get_player_suffix, player_stats as ps
-    from opponent_adjusted_nba_scraper.bball_ref.utils import get_dataframe, add_possessions
-    from opponent_adjusted_nba_scraper.utils.constants import DESIRED_LOG_COLUMNS
-    from opponent_adjusted_nba_scraper.bball_ref.teams import teams_within_drtg
+    from opponent_adjusted_nba_scraper.utils.constants import Mode
+    from opponent_adjusted_nba_scraper.utils.lookup import _lookup
+    from opponent_adjusted_nba_scraper.utils.util import _get_player_suffix, _calculate_stats
+    from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe, _add_possessions
+    from opponent_adjusted_nba_scraper.utils.constants import _DESIRED_LOG_COLUMNS
+    from opponent_adjusted_nba_scraper.bball_ref.teams import _teams_within_drtg
 
-def player_game_logs(_name, first_year, last_year, season_type="Playoffs"):
-    name = lookup(_name, ask_matches=False)
-    suffix = get_player_suffix(name)[:-5]
-    curr = first_year
+def _player_game_logs(_name, first_year, last_year, season_type="Playoffs"):
+    name = _lookup(_name, ask_matches=False)
+    suffix = _get_player_suffix(name)[:-5]
     dfs = []
-    while curr <= last_year:
+    iterator = tqdm(range(first_year, last_year + 1), desc="Loading player game logs...", ncols=75)
+    for curr in iterator:
         if season_type == "Playoffs":
             url = f'https://www.basketball-reference.com{suffix}/gamelog-playoffs/'
         else: 
             url = f'https://www.basketball-reference.com/{suffix}/gamelog/{curr}'
-        data_pd = get_dataframe(url, "pgl_basic_playoffs")
+        data_pd = _get_dataframe(url, "pgl_basic_playoffs")
         data_pd = data_pd.drop(["G", "G#", "Series", "", "GS"], axis=1)
         data_pd = data_pd.replace("", 0)
         data_pd["SEASON"] = data_pd[data_pd.columns[0]].str[:4].astype("string")
@@ -50,13 +53,13 @@ def player_game_logs(_name, first_year, last_year, season_type="Playoffs"):
             data_pd["SEASON"] = curr
         data_pd = data_pd.query("SEASON >= @first_year and SEASON <= @last_year")
         dfs.append(data_pd)
-        curr += 1
         if season_type == "Playoffs":
+            for _ in iterator: pass
             break
     result = pd.concat(dfs)
     result = result.reset_index(drop=True)
     result.index += 1
-    for i, col in enumerate(DESIRED_LOG_COLUMNS):
+    for i, col in enumerate(_DESIRED_LOG_COLUMNS):
         if col not in result.columns.values:
             if col == "NAME":
                 result[col] = name
@@ -67,7 +70,8 @@ def player_game_logs(_name, first_year, last_year, season_type="Playoffs"):
             result = result.iloc[:, left + [len(result.columns) - 1] + right]
     return result
 
-def player_stats(_name, first_year, last_year, min_drtg, max_drtg, data_format="OPP_INF", season_type="Playoffs"):
-    logs = player_game_logs(_name, first_year, last_year, season_type=season_type)
-    teams = teams_within_drtg(min_drtg, max_drtg, first_year, last_year)
-    stats = ps(logs, teams, add_possessions, data_format="OPP_INF")
+def player_stats(_name, first_year, last_year, min_drtg=80, max_drtg=130, data_format=Mode.default, season_type="Playoffs", printStats=False):
+    logs = _player_game_logs(_name, first_year, last_year, season_type=season_type)
+    teams = _teams_within_drtg(min_drtg, max_drtg, first_year, last_year)
+    stats = _calculate_stats(_name, logs, teams, _add_possessions, first_year, last_year, data_format, season_type, printStats)
+    return stats
