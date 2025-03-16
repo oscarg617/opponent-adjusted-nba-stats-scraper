@@ -30,13 +30,13 @@ def teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonType
         if not data_df.empty:
             data_df = data_df.query('DEF_RATING < @max_drtg and DEF_RATING >= @min_drtg')\
                 [['TEAM_NAME', 'DEF_RATING']]
-            data_df['TEAM'] = data_df['TEAM_NAME'].str.upper().map(_TEAM_TO_TEAM_ABBR)
+            data_df['TEAM'] = data_df['TEAM_NAME'].str.upper().map(_team_to_team_abbr())
             data_df = data_df.drop('TEAM_NAME', axis=1)
             data_df['SEASON'] = curr_year
             params = _team_advanced_params('Opponent', 'Totals', year, season_type)
             ts_df = _get_dataframe(url, _standard_header(), params)
             ts_df = ts_df[['TEAM_NAME', 'OPP_PTS', 'OPP_FGA', 'OPP_FTA']]
-            ts_df['TEAM'] = ts_df['TEAM_NAME'].str.upper().map(_TEAM_TO_TEAM_ABBR)
+            ts_df['TEAM'] = ts_df['TEAM_NAME'].str.upper().map(_team_to_team_abbr())
             ts_df = (ts_df.drop('TEAM_NAME', axis=1)
                 .query('TEAM.isin(@data_df.TEAM.values.tolist())'))
             data_df['OPP_TS'] = (ts_df['OPP_PTS']) / \
