@@ -9,7 +9,6 @@ except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr, SeasonType
     from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe
 
-@DeprecationWarning
 def _teams_within_drtg(_drtg_range, year_range, season_type: SeasonType):
     '''
     Returns a Pandas Dataframe of teams in a range of years within a range
