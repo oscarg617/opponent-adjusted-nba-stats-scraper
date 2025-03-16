@@ -26,6 +26,16 @@ class SeasonType:
 
     default = regular_season
 
+@dataclass
+class Site:
+    '''
+    Class for choosing site to collect data from.
+    '''
+
+    basketball_reference = "Basketball Reference"
+    nba_stats = "NBA Stats"
+
+    default = basketball_reference
 
 def _teams() -> dict:
     return {"ATL":'37', "BOS":'38', "BKN":'51', "CHA":'66', "CHI":'41', "CLE":'39', "DAL":'42',
