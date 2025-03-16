@@ -44,12 +44,12 @@ def player_game_logs(_name, year_range, season_type=SeasonType.default):
         data_pd["SEASON"] = data_pd[data_pd.columns[0]].str[:4].astype("string")
         data_pd = data_pd.iloc[:, [len(data_pd.columns) - 1] +
                                list(range(len(data_pd.columns) - 1))]
-        data_pd = data_pd[
-            (data_pd["AST"].str.contains("Inactive") is False) &
-            (data_pd["AST"].str.contains("AST") is False) &
-            (data_pd["AST"].str.contains("Did Not Play") is False) &
-            (data_pd["AST"].str.contains("Did Not Dress") is False)
-            ]\
+        data_pd = data_pd[~(
+            (data_pd["AST"].str.contains("Inactive")) |
+            (data_pd["AST"].str.contains("AST")) |
+            (data_pd["AST"].str.contains("Did Not Play")) |
+            (data_pd["AST"].str.contains("Did Not Dress"))
+            )]\
             .rename(columns={
                 data_pd.columns[1]: "DATE",
                 "Tm": "TEAM",
