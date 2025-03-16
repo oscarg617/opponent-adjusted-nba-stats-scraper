@@ -40,10 +40,10 @@ def _add_possessions(logs: pd.DataFrame, _team_dict: dict, _season_type: SeasonT
     total_poss = 0
     logs["DATE"] = pd.to_datetime(logs["DATE"])
     logs["GAME_SUFFIX"] = ""
-    for i in tqdm(range(1, len(logs) + 1), desc='Loading player possessions...', ncols=75):
-        logs.loc[i, "GAME_SUFFIX"] = _get_game_suffix(logs.loc[i, "DATE"], logs.loc[i, "TEAM"],
-                                                    logs.loc[i, "MATCHUP"])
-        suffix = logs.loc[i, "GAME_SUFFIX"]
+    for i in tqdm(range(len(logs)), desc='Loading player possessions...', ncols=75):
+        logs.iloc[i, "GAME_SUFFIX"] = _get_game_suffix(logs.iloc[i, "DATE"], logs.iloc[i, "TEAM"],
+                                                    logs.iloc[i, "MATCHUP"])
+        suffix = logs.iloc[i, "GAME_SUFFIX"]
         url = f'https://www.basketball-reference.com{suffix}'
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         " (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
