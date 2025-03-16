@@ -1,14 +1,16 @@
+'''Setup.py'''
 import setuptools
- 
-with open("README.md", "r") as fh:
+
+with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
- 
+
 setuptools.setup(
     name="opponent_adjusted_nba_scraper",
-    version="1.0.6",
+    version="1.0.9",
     author="Oscar Gutierrez Altamirano",
     author_email="oscargutierreza617@gmail.com",
-    description="A Python client for scraping data from stats.nba.com and opponent-adjusting players' stats.",
+    description="A Python client for scraping data from stats.nba.com and \
+        opponent-adjusting players' stats.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
@@ -19,7 +21,7 @@ setuptools.setup(
     "six==1.16.0",
     "Unidecode==1.3.8"
     ],
- 
+
     license="MIT",
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -34,6 +36,6 @@ setuptools.setup(
         "sports",
         "basketball",
         ],
-    
+
     package_data = {'opponent_adjusted_nba_scraper': ['opponent_adjusted_nba_scraper/utils/*.txt']}
 )
