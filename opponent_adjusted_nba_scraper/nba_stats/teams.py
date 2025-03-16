@@ -1,39 +1,52 @@
+'''Finding teams within a defensive rating range from stats.nba.com.'''
 import pandas as pd
 
 try:
     from nba_stats.utils import _format_year, _get_dataframe
-    import nba_stats.request_constants as rc
+    from nba_stats.request_constants import _team_advanced_params, _standard_header
     from utils.constants import _TEAM_TO_TEAM_ABBR
-except:
+    from utils.constants import SeasonType
+except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.utils import _format_year, _get_dataframe
-    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
+    from opponent_adjusted_nba_scraper.nba_stats.request_constants import _team_advanced_params, \
+        _standard_header
     from opponent_adjusted_nba_scraper.utils.constants import _TEAM_TO_TEAM_ABBR
+    from opponent_adjusted_nba_scraper.utils.constants import SeasonType
 
-def _teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Playoffs'):
-    curr_year = first_year
+def teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonType.default):
+    '''
+    Returns a Pandas Dataframe of teams in a range of years within a range
+    of defensive strength.
+    '''
+
+    assert len(drtg_range == 2)
+    assert len(year_range == 2)
+
+    curr_year = year_range[0]
     dfs = []
-    while curr_year <= last_year:
+    while curr_year <= year_range[1]:
         year = _format_year(curr_year)
         url = 'https://stats.nba.com/stats/leaguedashteamstats'
-        params = rc.team_advanced_params('Advanced', 'PerGame', year, season_type)
-        df = _get_dataframe(url, rc._STANDARD_HEADER, params)
-        if not df.empty:
-            df = df.query('DEF_RATING < @max_drtg and DEF_RATING >= @min_drtg')[['TEAM_NAME', 'DEF_RATING']]
-            df['TEAM'] = df['TEAM_NAME'].str.upper().map(_TEAM_TO_TEAM_ABBR)
-            df = df.drop('TEAM_NAME', axis=1)
-            df['SEASON'] = curr_year
-            params = rc.team_advanced_params('Opponent', 'Totals', year, season_type)
-            ts_df = _get_dataframe(url, rc.STANDARD_HEADER, params)
+        params = _team_advanced_params('Advanced', 'PerGame', year, season_type)
+        data_df = _get_dataframe(url, _standard_header(), params)
+        if not data_df.empty:
+            data_df = data_df.query('DEF_RATING < @max_drtg and DEF_RATING >= @min_drtg')\
+                [['TEAM_NAME', 'DEF_RATING']]
+            data_df['TEAM'] = data_df['TEAM_NAME'].str.upper().map(_TEAM_TO_TEAM_ABBR)
+            data_df = data_df.drop('TEAM_NAME', axis=1)
+            data_df['SEASON'] = curr_year
+            params = _team_advanced_params('Opponent', 'Totals', year, season_type)
+            ts_df = _get_dataframe(url, _standard_header(), params)
             ts_df = ts_df[['TEAM_NAME', 'OPP_PTS', 'OPP_FGA', 'OPP_FTA']]
             ts_df['TEAM'] = ts_df['TEAM_NAME'].str.upper().map(_TEAM_TO_TEAM_ABBR)
             ts_df = (ts_df.drop('TEAM_NAME', axis=1)
-                .query('TEAM.isin(@df.TEAM.values.tolist())'))
-            df['OPP_TS'] = (ts_df['OPP_PTS']) / (2 * (ts_df['OPP_FGA'] + (0.44 * ts_df['OPP_FTA'])))
-            dfs.append(df)
+                .query('TEAM.isin(@data_df.TEAM.values.tolist())'))
+            data_df['OPP_TS'] = (ts_df['OPP_PTS']) / \
+                (2 * (ts_df['OPP_FGA'] + (0.44 * ts_df['OPP_FTA'])))
+            dfs.append(data_df)
         curr_year += 1
     result = pd.concat(dfs)
     result = result.iloc[:,[2, 1, 0, 3]].reset_index(drop=True)
     result['OPP_TS'] = result['OPP_TS'].astype('float16')
     result = result.rename(columns={"DEF_RATING": "DRTG", "OPP_TS_PCT": "OPP_TS"})
     return result
-

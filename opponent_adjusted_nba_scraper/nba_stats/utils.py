@@ -1,45 +1,48 @@
-from requests import get
+'''Utils for stats.nba.com scraping'''
+import sys
+import requests
 import pandas as pd
 
 try:
-    import nba_stats.request_constants as rc
-    from utils.constants import _TEAMS
-except:
-    import opponent_adjusted_nba_scraper.nba_stats.request_constants as rc
-    from opponent_adjusted_nba_scraper.utils.constants import _TEAMS
+    from nba_stats.request_constants import _standard_header, _player_per_poss_param
+    from utils.constants import _TEAMS, SeasonType
+except ModuleNotFoundError:
+    from opponent_adjusted_nba_scraper.nba_stats.request_constants import _standard_header, \
+        _player_per_poss_param
+    from opponent_adjusted_nba_scraper.utils.constants import _TEAMS, SeasonType
 
-def _add_possessions(name, logs, team_dict, season_type):
+def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonType):
     total_poss = 0
     for year in team_dict:
         for opp_team in team_dict[year]:
             opp_id = 1610612700 + int(_TEAMS[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
-            df = _get_dataframe(url, rc.STANDARD_HEADER, rc.player_per_poss_param(opp_id, year, season_type))
-            if df.empty: return
-            df = df.query('PLAYER_NAME == @name')
-            min_per_poss = df.iloc[0]['MIN']
-            filter = logs.query('SEASON == @year')
-            filter = logs.query('MATCHUP == @opp_team')
-            min_played = filter['MIN'].sum()
+            per_poss_df = _get_dataframe(url, _standard_header(),
+                                _player_per_poss_param(opp_id, year, season_type))
+            if per_poss_df.empty:
+                break
+            per_poss_df = per_poss_df.query('PLAYER_NAME == @name')
+            min_per_poss = per_poss_df.iloc[0]['MIN']
+            filtered_logs = logs.query('SEASON == @year').query('MATCHUP == @opp_team')
+            min_played = filtered_logs['MIN'].sum()
             poss = min_played / min_per_poss
             total_poss += round(poss)
     return total_poss
 
 def _get_dataframe(url, header, param):
-    response = get(url, headers=header, params=param)
+    response = requests.get(url, headers=header, params=param, timeout=10)
     if response.status_code != 200:
-        exit(f"{response.status_code} Gateway Timeout")
+        sys.exit(f"{response.status_code} Gateway Timeout")
     response_json = response.json()
-    df = pd.DataFrame(response_json['resultSets'][0]['rowSet'])
-    if df.empty: 
-        return df
-    df.columns = response_json['resultSets'][0]['headers']
-    return df
+    data_frame = pd.DataFrame(response_json['resultSets'][0]['rowSet'])
+    if data_frame.empty:
+        return data_frame
+    data_frame.columns = response_json['resultSets'][0]['headers']
+    return data_frame
 
 def _format_year(end_year):
     start_year = end_year - 1
     end_year_format = end_year % 100
     if end_year_format >= 10:
         return f'{start_year}-{end_year_format}'
-    else: 
-        return f'{start_year}-0{end_year_format}'
+    return f'{start_year}-0{end_year_format}'
