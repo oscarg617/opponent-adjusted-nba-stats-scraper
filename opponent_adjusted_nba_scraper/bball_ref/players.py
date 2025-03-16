@@ -4,20 +4,23 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 try:
-    from utils.constants import Mode, SeasonType
+    from utils.constants import Mode, SeasonType, Site
     from utils.lookup import _lookup
     from utils.util import _get_player_suffix, _calculate_stats, _print_no_logs
     from utils.constants import _desired_log_columns
+    from utils.teams import teams_within_drtg
     from bball_ref.utils import _get_dataframe, _add_possessions
-    from bball_ref.teams import teams_within_drtg
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType
+
+    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType, Site
     from opponent_adjusted_nba_scraper.utils.lookup import _lookup
     from opponent_adjusted_nba_scraper.utils.constants import _desired_log_columns
     from opponent_adjusted_nba_scraper.utils.util import _get_player_suffix, _calculate_stats,\
                                                                             _print_no_logs
+    from opponent_adjusted_nba_scraper.utils.teams import teams_within_drtg
     from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe, _add_possessions
-    from opponent_adjusted_nba_scraper.bball_ref.teams import teams_within_drtg
+
+pd.set_option('display.max_rows', None)
 
 def player_game_logs(_name, year_range, season_type=SeasonType.default):
     '''
@@ -31,19 +34,22 @@ def player_game_logs(_name, year_range, season_type=SeasonType.default):
 
     dfs = []
     for curr in iterator:
-
         if season_type == SeasonType.playoffs:
             url = f'https://www.basketball-reference.com{suffix}/gamelog-playoffs/'
+            data_pd = _get_dataframe(url, "pgl_basic_playoffs")\
+                .drop(["G", "G#", "Series", "", "GS"], axis=1)\
+                .replace("", np.nan)
         else:
             url = f'https://www.basketball-reference.com/{suffix}/gamelog/{curr}'
-
-        data_pd = _get_dataframe(url, "pgl_basic_playoffs")\
-            .drop(["G", "G#", "Series", "", "GS"], axis=1)\
-            .replace("", 0)
+            data_pd = _get_dataframe(url, "pgl_basic")\
+                .drop(["G", "Age", "", "GS"], axis=1)\
+                .replace("", np.nan)
 
         data_pd["SEASON"] = data_pd[data_pd.columns[0]].str[:4].astype("string")
         data_pd = data_pd.iloc[:, [len(data_pd.columns) - 1] +
                                list(range(len(data_pd.columns) - 1))]
+
+        data_pd.dropna(subset=["AST"], inplace=True)
         data_pd = data_pd[~(
             (data_pd["AST"].str.contains("Inactive")) |
             (data_pd["AST"].str.contains("AST")) |
@@ -58,6 +64,7 @@ def player_game_logs(_name, year_range, season_type=SeasonType.default):
 
         data_pd["minutes"] = data_pd["MIN"].str.extract(r'([1-9]*[0-9]):')
         data_pd["seconds"] = data_pd["MIN"].str.extract(r':([0-5][0-9])')
+
         data_pd["MIN"] = data_pd["minutes"].astype("int32") + \
                         (data_pd["seconds"].astype("int32") / 60)
 
@@ -74,7 +81,7 @@ def player_game_logs(_name, year_range, season_type=SeasonType.default):
         data_pd = data_pd.astype(keep)
         if season_type == SeasonType.default:
             data_pd["SEASON"] = curr
-        data_pd = data_pd.query("SEASON >= @first_year and SEASON <= @last_year")
+        data_pd = data_pd.query("SEASON >= @year_range[0] and SEASON <= @year_range[1]")
         dfs.append(data_pd)
         if season_type == SeasonType.playoffs:
             for _ in iterator:
@@ -105,7 +112,7 @@ def player_stats(_name, year_range, drtg_range,
     if len(logs) == 0:
         return _print_no_logs(_name)
 
-    teams = teams_within_drtg(drtg_range, year_range)
+    teams = teams_within_drtg(drtg_range, year_range, Site.basketball_reference)
     if len(teams) == 0:
         return _print_no_logs(_name)
 

@@ -3,17 +3,17 @@ from stats.nba.com.'''
 import pandas as pd
 
 try:
-    from utils.constants import Mode, SeasonType
+    from utils.constants import Mode, SeasonType, Site
     from utils.util import _calculate_stats, _print_no_logs
+    from utils.teams import teams_within_drtg
     from nba_stats.utils import _format_year, _add_possessions, _get_dataframe
-    from nba_stats.teams import teams_within_drtg
     from nba_stats.request_constants import _standard_header, _player_logs_params
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType
+    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType, Site
     from opponent_adjusted_nba_scraper.utils.util import _calculate_stats, _print_no_logs
+    from opponent_adjusted_nba_scraper.utils.teams import teams_within_drtg
     from opponent_adjusted_nba_scraper.nba_stats.utils import _format_year, _add_possessions, \
         _get_dataframe
-    from opponent_adjusted_nba_scraper.nba_stats.teams import teams_within_drtg
     from opponent_adjusted_nba_scraper.nba_stats.request_constants import _standard_header, \
         _player_logs_params
 
@@ -69,7 +69,7 @@ def player_stats(name, year_range, drtg_range, data_format=Mode.default,
     if len(logs) == 0:
         return _print_no_logs(name)
 
-    teams = teams_within_drtg(drtg_range, year_range)
+    teams = teams_within_drtg(drtg_range, year_range, Site.nba_stats)
     if len(teams) == 0:
         return _print_no_logs(name)
 
