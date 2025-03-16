@@ -14,8 +14,9 @@ except ModuleNotFoundError:
 
 # Credit to https://github.com/vishaalagartha for the following four functions
 def _get_game_suffix(date, team1, team2):
-    response = requests.get(f'https://www.basketball-reference.com/boxscores/index.fcgi?year=\
-                   {date.year}&month={date.month}&day={date.day}', timeout=10)
+    url = "https://www.basketball-reference.com/boxscores/index.fcgi?year=" + \
+            f"{date.year}&month={date.month}&day={date.day}"
+    response = requests.get(url, timeout=10)
     suffix = None
     if response.status_code==200:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -148,29 +149,29 @@ def _calculate_stats(logs: pd.DataFrame, teams_df: pd.DataFrame, add_possessions
     elif data_format == Mode.per_100_poss:
         possessions = add_possessions(logs, teams_dict, season_type)
         points = f"{round((logs['PTS'].sum() / possessions) * 100, 1)} points per 100 possessions"
-        rebounds = f"{round((logs['TRB'].sum() / possessions) * 100, 1)} \
-            rebounds per 100 possessions"
-        assists = f"{round((logs['AST'].sum() / possessions) * 100, 1)} \
-            assists per 100 possessions"
+        rebounds = f"{round((logs['TRB'].sum() / possessions) * 100, 1)}" + \
+            "rebounds per 100 possessions"
+        assists = f"{round((logs['AST'].sum() / possessions) * 100, 1)}" + \
+            "assists per 100 possessions"
     elif data_format == Mode.pace_adj:
         possessions = add_possessions(logs, teams_dict, season_type)
         min_ratio = logs['MIN'].mean() / 48
-        points = f"{round((min_ratio * (logs['PTS'].sum() / possessions) * 100), 1)} \
-            pace-adjusted points per game"
-        rebounds = f"{round((min_ratio * (logs['TRB'].sum() / possessions) * 100), 1)} \
-            pace-adjusted rebounds per game"
-        assists = f"{round((min_ratio * (logs['AST'].sum() / possessions) * 100), 1)} \
-            pace-adjusted assists per game"
+        points = f"{round((min_ratio * (logs['PTS'].sum() / possessions) * 100), 1)}" + \
+            " pace-adjusted points per game"
+        rebounds = f"{round((min_ratio * (logs['TRB'].sum() / possessions) * 100), 1)}" + \
+            " pace-adjusted rebounds per game"
+        assists = f"{round((min_ratio * (logs['AST'].sum() / possessions) * 100), 1)}" + \
+            " pace-adjusted assists per game"
     elif data_format == Mode.opp_adj:
-        points = f"{round((logs['PTS'].mean() * (110 / opp_drtg)), 1)} opponent-adjusted \
-            points per game"
+        points = f"{round((logs['PTS'].mean() * (110 / opp_drtg)), 1)} opponent-adjusted" + \
+            " points per game"
         rebounds = f"{round(logs['TRB'].mean(), 1)} rebounds per game"
         assists = f"{round(logs['AST'].mean(), 1)} assists per game"
     elif data_format == Mode.opp_pace_adj:
         possessions = add_possessions(logs, teams_dict, season_type)
         points_per_100 = (logs['PTS'].sum() / possessions) * 100
-        points = f"{round(((logs['MIN'].mean() / 48) * points_per_100 * (110 / opp_drtg)), 1)} \
-            opponent and pace-adjusted points per game"
+        points = f"{round(((logs['MIN'].mean() / 48) * points_per_100 * (110 / opp_drtg)), 1)}" + \
+            " opponent and pace-adjusted points per game"
         rebounds = f"{round(logs['TRB'].mean(), 1)} rebounds per game"
         assists = f"{round(logs['AST'].mean(), 1)} assists per game"
 
@@ -253,8 +254,8 @@ def _add_names():
     file.close()
 
 def _get_names(url):
-    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 \
-               (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" + \
+               "(KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
     response = requests.get(url, headers=headers, timeout=10)
     if response.status_code != 200:
         sys.exit(f"{response.status_code} Error")

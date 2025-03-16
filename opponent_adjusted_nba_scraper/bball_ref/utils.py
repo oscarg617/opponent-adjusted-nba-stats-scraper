@@ -41,11 +41,10 @@ def _add_possessions(logs: pd.DataFrame, _team_dict: dict, _season_type: SeasonT
     logs["DATE"] = pd.to_datetime(logs["DATE"])
     logs["GAME_SUFFIX"] = ""
     for i in tqdm(range(len(logs)), desc='Loading player possessions...', ncols=75):
-        logs.iloc[i, "GAME_SUFFIX"] = _get_game_suffix(logs.iloc[i, "DATE"], logs.iloc[i, "TEAM"],
-                                                    logs.iloc[i, "MATCHUP"])
-        suffix = logs.iloc[i, "GAME_SUFFIX"]
+        suffix = _get_game_suffix(logs.iloc[i]["DATE"], logs.iloc[i]["TEAM"],
+                                                    logs.iloc[i]["MATCHUP"])
         url = f'https://www.basketball-reference.com{suffix}'
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" + \
         " (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
         request = requests.get(url, headers=headers, timeout=10)
         if request.status_code != 200:
@@ -53,7 +52,7 @@ def _add_possessions(logs: pd.DataFrame, _team_dict: dict, _season_type: SeasonT
         request = request.text.replace("<!--","").replace("-->","")
         soup = BeautifulSoup(request, features="lxml")
         pace = soup.find("td", attrs={"data-stat":"pace"}).text
-        total_poss += (logs.loc[i, "MIN"] / 48) * float(pace)
+        total_poss += (logs.iloc[i]["MIN"] / 48) * float(pace)
         time.sleep(21)
     logs = logs.drop(columns=["GAME_SUFFIX"])
     return total_poss
