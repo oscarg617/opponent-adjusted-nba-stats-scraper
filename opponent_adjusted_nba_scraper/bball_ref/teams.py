@@ -1,14 +1,16 @@
 '''Finding teams within a defensive rating range from basketball reference.'''
+import time
 import pandas as pd
 from tqdm import tqdm
 try:
-    from utils.constants import _team_to_team_abbr
+    from utils.constants import _team_to_team_abbr, SeasonType
     from bball_ref.utils import _get_dataframe
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr
+    from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr, SeasonType
     from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe
 
-def teams_within_drtg(_drtg_range, year_range, season_type='Regular Season'):
+@DeprecationWarning
+def _teams_within_drtg(_drtg_range, year_range, season_type: SeasonType):
     '''
     Returns a Pandas Dataframe of teams in a range of years within a range
     of defensive strength.
@@ -36,10 +38,11 @@ def teams_within_drtg(_drtg_range, year_range, season_type='Regular Season'):
         data_pd = data_pd.query("DRTG >= @_drtg_range[0] and DRTG < @_drtg_range[1]")
         pd.options.mode.chained_assignment = None
         data_pd = data_pd.replace(r'\*','',regex=True).astype(str)
-        data_pd = data_pd[(data_pd["TEAM"].str.contains("League Average") is False)]
+        data_pd = data_pd[~(data_pd["TEAM"].str.contains("League Average"))]
         data_pd["TEAM"] = data_pd["TEAM"].str.upper().map(_team_to_team_abbr())
         data_pd["SEASON"] = curr
         dfs.append(data_pd)
+        time.sleep(21)
     result = pd.concat(dfs)
     result = result.reset_index(drop=True)
     result.index += 1

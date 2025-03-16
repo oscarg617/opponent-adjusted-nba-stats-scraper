@@ -11,7 +11,7 @@ except ModuleNotFoundError:
         _standard_header
     from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr, SeasonType
 
-def teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonType.default):
+def _teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonType.default):
     '''
     Returns a Pandas Dataframe of teams in a range of years within a range
     of defensive strength.
