@@ -4,14 +4,12 @@ import pandas as pd
 try:
     from nba_stats.utils import _format_year, _get_dataframe
     from nba_stats.request_constants import _team_advanced_params, _standard_header
-    from utils.constants import _TEAM_TO_TEAM_ABBR
-    from utils.constants import SeasonType
+    from utils.constants import _team_to_team_abbr, SeasonType
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.utils import _format_year, _get_dataframe
     from opponent_adjusted_nba_scraper.nba_stats.request_constants import _team_advanced_params, \
         _standard_header
-    from opponent_adjusted_nba_scraper.utils.constants import _TEAM_TO_TEAM_ABBR
-    from opponent_adjusted_nba_scraper.utils.constants import SeasonType
+    from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr, SeasonType
 
 def teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonType.default):
     '''

@@ -5,17 +5,17 @@ import pandas as pd
 
 try:
     from nba_stats.request_constants import _standard_header, _player_per_poss_param
-    from utils.constants import _TEAMS, SeasonType
+    from utils.constants import _teams, SeasonType
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.request_constants import _standard_header, \
         _player_per_poss_param
-    from opponent_adjusted_nba_scraper.utils.constants import _TEAMS, SeasonType
+    from opponent_adjusted_nba_scraper.utils.constants import _teams, SeasonType
 
 def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonType):
     total_poss = 0
     for year in team_dict:
         for opp_team in team_dict[year]:
-            opp_id = 1610612700 + int(_TEAMS[opp_team])
+            opp_id = 1610612700 + int(_teams()[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
             per_poss_df = _get_dataframe(url, _standard_header(),
                                 _player_per_poss_param(opp_id, year, season_type))

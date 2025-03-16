@@ -2,10 +2,10 @@
 import pandas as pd
 from tqdm import tqdm
 try:
-    from utils.constants import _TEAM_TO_TEAM_ABBR
+    from utils.constants import _team_to_team_abbr
     from bball_ref.utils import _get_dataframe
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.utils.constants import _TEAM_TO_TEAM_ABBR
+    from opponent_adjusted_nba_scraper.utils.constants import _team_to_team_abbr
     from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe
 
 def teams_within_drtg(_drtg_range, year_range, season_type='Regular Season'):
@@ -37,7 +37,7 @@ def teams_within_drtg(_drtg_range, year_range, season_type='Regular Season'):
         pd.options.mode.chained_assignment = None
         data_pd = data_pd.replace(r'\*','',regex=True).astype(str)
         data_pd = data_pd[(data_pd["TEAM"].str.contains("League Average") is False)]
-        data_pd["TEAM"] = data_pd["TEAM"].str.upper().map(_TEAM_TO_TEAM_ABBR)
+        data_pd["TEAM"] = data_pd["TEAM"].str.upper().map(_team_to_team_abbr())
         data_pd["SEASON"] = curr
         dfs.append(data_pd)
     result = pd.concat(dfs)

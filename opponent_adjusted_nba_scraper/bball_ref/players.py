@@ -7,13 +7,13 @@ try:
     from utils.constants import Mode, SeasonType
     from utils.lookup import _lookup
     from utils.util import _get_player_suffix, _calculate_stats, _print_no_logs
-    from utils.constants import _DESIRED_LOG_COLUMNS
+    from utils.constants import _desired_log_columns
     from bball_ref.utils import _get_dataframe, _add_possessions
     from bball_ref.teams import teams_within_drtg
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType
     from opponent_adjusted_nba_scraper.utils.lookup import _lookup
-    from opponent_adjusted_nba_scraper.utils.constants import _DESIRED_LOG_COLUMNS
+    from opponent_adjusted_nba_scraper.utils.constants import _desired_log_columns
     from opponent_adjusted_nba_scraper.utils.util import _get_player_suffix, _calculate_stats,\
                                                                             _print_no_logs
     from opponent_adjusted_nba_scraper.bball_ref.utils import _get_dataframe, _add_possessions
@@ -83,7 +83,7 @@ def player_game_logs(_name, year_range, season_type=SeasonType.default):
     result = pd.concat(dfs)
     result = result.reset_index(drop=True)
     result.index += 1
-    for i, col in enumerate(_DESIRED_LOG_COLUMNS):
+    for i, col in enumerate(_desired_log_columns()):
         if col not in result.columns.values:
             if col == "NAME":
                 result[col] = _name
