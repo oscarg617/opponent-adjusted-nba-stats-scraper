@@ -2,19 +2,22 @@
 import sys
 import requests
 import pandas as pd
+from tqdm import tqdm
 
 try:
     from nba_stats.request_constants import _standard_header, _player_per_poss_param
     from utils.constants import _teams, SeasonType
+    from utils.util import _request_get_wrapper
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.request_constants import _standard_header, \
         _player_per_poss_param
     from opponent_adjusted_nba_scraper.utils.constants import _teams, SeasonType
+    from utils.util import _request_get_wrapper
 
 def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonType):
     total_poss = 0
-    for year in team_dict:
-        for opp_team in team_dict[year]:
+    teams_list = [(year, opp_team) for year in team_dict for opp_team in team_dict[year]]
+    for year, opp_team in tqdm(teams_list):
             opp_id = 1610612700 + int(_teams()[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
             per_poss_df = _get_dataframe(url, _standard_header(),
@@ -29,8 +32,12 @@ def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonTyp
             total_poss += round(poss)
     return total_poss
 
-def _get_dataframe(url, header, param):
-    response = requests.get(url, headers=header, params=param, timeout=10)
+def _get_dataframe(url, headers, param):
+    response = _request_get_wrapper(requests.get, {
+        "url": url,
+        "headers": headers,
+        "timeout": 10
+    })
     if response.status_code != 200:
         sys.exit(f"{response.status_code} Gateway Timeout")
     response_json = response.json()

@@ -3,6 +3,7 @@ import sys
 import unicodedata
 from typing import Callable
 import requests
+from ratelimit import sleep_and_retry, limits
 from bs4 import BeautifulSoup
 import pandas as pd
 import unidecode
@@ -16,7 +17,10 @@ except ModuleNotFoundError:
 def _get_game_suffix(date, team1, team2):
     url = "https://www.basketball-reference.com/boxscores/index.fcgi?year=" + \
             f"{date.year}&month={date.month}&day={date.day}"
-    response = requests.get(url, timeout=10)
+    response = _request_get_wrapper(requests.get, {
+        "url": url,
+        "timeout": 10
+    })
     suffix = None
     if response.status_code==200:
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -65,13 +69,19 @@ def _get_player_suffix(name):
         other_names_search = other_names
         last_name_part = _create_last_name_part_of_suffix(other_names)
         suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
-    player_r = requests.get(f'https://www.basketball-reference.com{suffix}', timeout=10)
+    player_r = _request_get_wrapper(requests.get, {
+        "url": f'https://www.basketball-reference.com{suffix}',
+        "timeout": 10
+    })
     while player_r.status_code == 404:
         other_names_search.pop(0)
         last_name_part = _create_last_name_part_of_suffix(other_names_search)
         initial = last_name_part[0].lower()
         suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
-        player_r = requests.get(f'https://www.basketball-reference.com{suffix}', timeout=10)
+        player_r = _request_get_wrapper(requests.get, {
+            "url": f'https://www.basketball-reference.com{suffix}',
+            "timeout": 10
+        })
     while player_r.status_code==200:
         player_soup = BeautifulSoup(player_r.content, 'html.parser')
         heading1 = player_soup.find('h1')
@@ -103,8 +113,10 @@ def _get_player_suffix(name):
                 initial = last_name_part[0].lower()
                 suffix = '/players/'+initial+'/'+last_name_part+first_name_part+'01.html'
 
-                player_r = requests.get(f'https://www.basketball-reference.com{suffix}',
-                                        timeout=10)
+                player_r = _request_get_wrapper(requests.get, {
+                    "url": f'https://www.basketball-reference.com{suffix}',
+                    "timeout": 10
+                })
     sys.exit(f'{player_r.status_code} Error')
 
 
@@ -112,8 +124,10 @@ def _remove_accents(name, team, season_end_year):
     alphabet = set('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXZY ')
     if len(set(name).difference(alphabet))==0:
         return name
-    response = requests.get(f'https://www.basketball-reference.com/teams/{team}/\
-                            {season_end_year}.html', timeout=10)
+    response = _request_get_wrapper(requests.get, {
+        "url": f'https://www.basketball-reference.com/teams/{team}/{season_end_year}.html',
+        "timeout": 10
+    })
     team_df = None
     best_match = name
     if response.status_code==200:
@@ -256,7 +270,11 @@ def _add_names():
 def _get_names(url):
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" + \
                "(KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
-    response = requests.get(url, headers=headers, timeout=10)
+    response = _request_get_wrapper(requests.get, {
+        "url": url,
+        "headers": headers,
+        "timeout": 10
+    })
     if response.status_code != 200:
         sys.exit(f"{response.status_code} Error")
     soup = BeautifulSoup(response.text, features="lxml")
@@ -266,3 +284,8 @@ def _get_names(url):
 
 def _print_no_logs(name):
     print(f"No logs found for `{name}`.")
+
+@sleep_and_retry
+@limits(calls=19, period=60)
+def _request_get_wrapper(function: Callable, arguments: dict):
+    return function(**arguments)

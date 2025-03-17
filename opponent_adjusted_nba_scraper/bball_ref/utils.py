@@ -7,19 +7,24 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 try:
-    from utils.util import _get_game_suffix
+    from utils.util import _get_game_suffix, _request_get_wrapper
     from utils.constants import SeasonType
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.utils.util import _get_game_suffix
+    from opponent_adjusted_nba_scraper.utils.util import _get_game_suffix, _request_get_wrapper
     from opponent_adjusted_nba_scraper.utils.constants import SeasonType
 
 def _get_dataframe(url: str, attrs_id: str) -> pd.DataFrame:
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
-    request = requests.get(url, headers=headers, timeout=10)
-    if request.status_code != 200:
-        sys.exit(f"{request.status_code} Error")
-    soup = BeautifulSoup(request.text, features="lxml")
+
+    response = _request_get_wrapper(requests.get, {
+        "url": url,
+        "headers": headers,
+        "timeout": 10
+    })
+    if response.status_code != 200:
+        sys.exit(f"{response.status_code} Error")
+    soup = BeautifulSoup(response.text, features="lxml")
     table = soup.find("table", attrs={"id": attrs_id})
     header = []
     rows = []
@@ -46,11 +51,15 @@ def _add_possessions(logs: pd.DataFrame, _team_dict: dict, _season_type: SeasonT
         url = f'https://www.basketball-reference.com{suffix}'
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" + \
         " (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
-        request = requests.get(url, headers=headers, timeout=10)
-        if request.status_code != 200:
-            sys.exit(f"{request.status_code} Error")
-        request = request.text.replace("<!--","").replace("-->","")
-        soup = BeautifulSoup(request, features="lxml")
+        response = _request_get_wrapper(requests.get, {
+            "url": url,
+            "headers": headers,
+            "timeout": 10
+        })
+        if response.status_code != 200:
+            sys.exit(f"{response.status_code} Error")
+        response = response.text.replace("<!--","").replace("-->","")
+        soup = BeautifulSoup(response, features="lxml")
         pace = soup.find("td", attrs={"data-stat":"pace"}).text
         total_poss += (logs.iloc[i]["MIN"] / 48) * float(pace)
         time.sleep(21)
