@@ -1,4 +1,5 @@
 '''Finding teams within a defensive rating range from stats.nba.com.'''
+import sys
 import pandas as pd
 
 try:
@@ -17,8 +18,12 @@ def _teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonTyp
     of defensive strength.
     '''
 
-    assert len(drtg_range == 2)
-    assert len(year_range == 2)
+    assert len(drtg_range) == 2
+    assert len(year_range) == 2
+    assert drtg_range[0] <= drtg_range[1]
+    assert year_range[0] <= year_range[1]
+    if year_range[0] < 1971:
+        sys.exit("Opponent data is not avaiable for teams before the 1970-71 season.")
 
     curr_year = year_range[0]
     dfs = []
