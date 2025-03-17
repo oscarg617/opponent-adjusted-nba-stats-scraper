@@ -33,7 +33,7 @@ def _teams_within_drtg(drtg_range: list, year_range: list, season_type=SeasonTyp
         params = _team_advanced_params('Advanced', 'PerGame', year, season_type)
         data_df = _get_dataframe(url, _standard_header(), params)
         if not data_df.empty:
-            data_df = data_df.query('DEF_RATING < @max_drtg and DEF_RATING >= @min_drtg')\
+            data_df = data_df.query('DEF_RATING < @drtg_range[0] and DEF_RATING >= @drtg_range[1]')\
                 [['TEAM_NAME', 'DEF_RATING']]
             data_df['TEAM'] = data_df['TEAM_NAME'].str.upper().map(_team_to_team_abbr())
             data_df = data_df.drop('TEAM_NAME', axis=1)
