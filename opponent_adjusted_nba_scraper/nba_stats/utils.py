@@ -17,7 +17,7 @@ except ModuleNotFoundError:
 def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonType):
     total_poss = 0
     teams_list = [(year, opp_team) for year in team_dict for opp_team in team_dict[year]]
-    for year, opp_team in tqdm(teams_list):
+    for year, opp_team in tqdm(teams_list, desc="Loading player possessions...", ncols=75):
             opp_id = 1610612700 + int(_teams()[opp_team])
             url = 'https://stats.nba.com/stats/leaguedashplayerstats'
             per_poss_df = _get_dataframe(url, _standard_header(),
@@ -32,10 +32,11 @@ def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonTyp
             total_poss += round(poss)
     return total_poss
 
-def _get_dataframe(url, headers, param):
+def _get_dataframe(url, headers, params):
     response = _request_get_wrapper(requests.get, {
         "url": url,
         "headers": headers,
+        "params": params,
         "timeout": 10
     })
     if response.status_code != 200:
