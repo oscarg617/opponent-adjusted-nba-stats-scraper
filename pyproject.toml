@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "opponent_adjusted_nba_scraper"
-version = "1.0.19"
+version = "1.0.20"
 authors = [
   { name="Oscar Gutierrez Altamirano", email="oscargutierreza617@gmail.com" },
 ]

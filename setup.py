@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="opponent_adjusted_nba_scraper",
-    version="1.0.19",
+    version="1.0.20",
     author="Oscar Gutierrez Altamirano",
     author_email="oscargutierreza617@gmail.com",
     description="A Python client for scraping data from stats.nba.com and \
