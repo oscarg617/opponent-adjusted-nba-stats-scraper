@@ -12,7 +12,7 @@ except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.request_constants import _standard_header, \
         _player_per_poss_param
     from opponent_adjusted_nba_scraper.utils.constants import _teams, SeasonType
-    from utils.util import _request_get_wrapper
+    from opponent_adjusted_nba_scraper.utils.util import _request_get_wrapper
 
 def _add_possessions(logs: pd.DataFrame, team_dict: dict, season_type: SeasonType):
     total_poss = 0
