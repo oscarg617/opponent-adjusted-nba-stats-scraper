@@ -26,13 +26,14 @@ def _team_advanced_params(measure_type, per_mode, season_year, season_type):
             ("VsDivision", "" ))
 
 def _player_per_poss_param(opp_id, season_year, season_type):
-    return (("College", ""), ("Conference", ""), ("Country", ""), ("DateFrom", ""), ("DateTo", ""),
-            ("Division", ""), ("DraftPick", ""), ("DraftYear", ""), ("GameScope", ""),
-            ("GameSegment", ""), {"Height", ""}, ("LastNGames", "0"), ("LeagueID", "00"),
-            ("Location", ""), ("MeasureType", "Base"), ("Month", "0"),
-            ("OpponentTeamID", str(opp_id)), ("Outcome", ""), ("PORound", "0"),
-            ("PaceAdjust", "N"), ("PerMode", "PerPossession"), ("Period", "0"),
-            ("PlayerExperience", ""), ("PlayerPosition", ""), ("PlusMinus", "N"), ("Rank", "N"),
-            ("Season", season_year), ("SeasonSegment", ""), ("SeasonType", season_type),
-            ("ShotClockRange", ""), ("StarterBench", ""), ("TeamID", "0"), ("VsConference", ""),
-            ("VsDivision", "" ), ("Weight", ""))
+
+    return (('LastNGames', '0'), ('MeasureType', 'Base'), ('Month', '0'),
+            ('OpponentTeamID', int(opp_id)), ('PaceAdjust', 'N'), ('PerMode', 'PerPossession'),
+            ('Period', '0'), ('PlusMinus', 'N'), ('Rank', 'N'), ('Season', season_year),
+            ('SeasonType', season_type), ('College', ''), ('Conference', ''), ('Country', ''),
+            ('DateFrom', ''), ('DateTo', ''), ('Division', ''), ('DraftPick', ''),
+            ('DraftYear', ''), ('GameScope', ''), ('GameSegment', ''), ('Height', ''),
+            ('LeagueID', ''), ('Location', ''), ('Outcome', ''), ('PORound', ''),
+            ('PlayerExperience', ''), ('PlayerPosition', ''), ('SeasonSegment', ''),
+            ('ShotClockRange', ''), ('StarterBench', ''), ('TeamID', ''), ('TwoWay', ''),
+            ('VsConference', ''), ('VsDivision', ''), ('Weight', ''))

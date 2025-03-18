@@ -1,17 +1,13 @@
 '''Testing player methods.'''
 import unittest
 
-try:
-    from bball_ref.players import player_game_logs, player_stats
-    from utils.constants import Mode, SeasonType
-except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.bball_ref.players import player_game_logs, player_stats
-    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType
+from ..opponent_adjusted_nba_scraper.players import player_game_logs, player_stats
+from ..opponent_adjusted_nba_scraper.constants import Mode, SeasonType
 
 class TestPlayerStats(unittest.TestCase):
     '''Tests for each method in opponent_adjusted_nba_scraper.bball_ref.players'''
     def _test_player_game_logs(self):
-        logs = player_game_logs("Stephen Curry", 2015, 2017, season_type="Playoffs")
+        logs = player_game_logs("Stephen Curry", [2015, 2017], season_type=SeasonType.playoffs)
         self.assertEqual(logs['PTS'].sum(), 1523)
 
         expected_columns = ['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME',

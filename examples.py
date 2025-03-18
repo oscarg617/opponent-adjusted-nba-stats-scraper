@@ -6,7 +6,7 @@ try:
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats.players import player_game_logs, player_stats
     from opponent_adjusted_nba_scraper.nba_stats.teams import teams_within_drtg
-    from opponent_adjusted_nba_scraper.utils.constants import Mode, SeasonType
+    from opponent_adjusted_nba_scraper.constants import Mode, SeasonType
 
 df = player_game_logs('LeBron James', [2012, 2014], season_type=SeasonType.playoffs)
 print(df)

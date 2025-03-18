@@ -32,7 +32,7 @@ def _levenshtein(string1, string2, maximum):
 # are returned for final user approval.
 # Implementation borrowed from https://github.com/vishaalagartha/basketball_reference_scraper
 def _lookup(player, ask_matches = True):
-    path = os.path.join(os.path.dirname(__file__), 'names.txt')
+    path = os.path.join(os.path.dirname(__file__), 'data\\names.txt')
     normalized = unidecode.unidecode(player)
     matches = []
     with open(path, encoding='utf-8') as file:
