@@ -6,3 +6,4 @@ ratelimit==2.2.1
 bs4==0.0.2
 tqdm==4.66.2
 pylint==3.3.5
+build==1.2.2.post1
