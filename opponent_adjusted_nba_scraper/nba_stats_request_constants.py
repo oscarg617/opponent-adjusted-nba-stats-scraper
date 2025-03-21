@@ -7,12 +7,13 @@ def _standard_header() -> dict:
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
 
 def _player_logs_params(season_year, season_type):
-    return (("DateFrom", ""), ("DateTo", ""), ("GameSegment", ""), ("LastNGames", "0"),
-            ("LeagueID", "00"), ("Location", ""), ("MeasureType", "Base"), ("Month", "0"),
-            ("OpponentTeamID", "0"), ("Outcome", ""), ("PORound", "0"), ("PaceAdjust", "N"),
-            ("PerMode", "Totals"), ("Period", "0"), ("PlusMinus", "N"), ("Rank", "N"),
-            ("Season", season_year), ("SeasonSegment", ""), ("SeasonType", season_type),
-            ("ShotClockRange", ""),("VsConference", ""),("VsDivision", "" ))
+
+    return (("DateFrom", ""), ("DateTo", ""), ("GameSegment", ""), ("LastNGames", ""),
+            ("LeagueID", ""), ("Location", ""), ("MeasureType", None), ("Month", ""),
+            ("OpponentTeamID", None), ("Outcome", ""), ("PORound", ""), ("PerMode", ""),
+            ("Period", ""), ("PlayerID", ""), ("Season", season_year), ("SeasonSegment", ""),
+            ("SeasonType", season_type), ("ShotClockRange", ""), ("TeamID", ""),
+            ("VsConference", ""), ("VsDivision", ""))
 
 def _team_advanced_params(measure_type, per_mode, season_year, season_type):
     return (("Conference", ""), ("DateFrom", ""), ("DateTo", ""), ("Division", ""),
