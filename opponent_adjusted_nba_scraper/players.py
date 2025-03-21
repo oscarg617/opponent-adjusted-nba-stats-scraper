@@ -5,24 +5,23 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 try:
-    from bball_ref_lookup import _lookup
     from bball_ref_utils import _bball_ref_get_dataframe, _get_player_suffix, \
         _bball_ref_add_possessions
-    from constants import Mode, SeasonType, Site, _desired_log_columns
+    from constants import _desired_log_columns
     from nba_stats_request_constants import _standard_header, _player_logs_params
     from nba_stats_utils import _format_year, _nba_stats_get_dataframe, _nba_stats_add_possessions
+    from parameters import Mode, SeasonType, Site
     from teams import teams_within_drtg
     from util import _calculate_stats, _print_no_logs, _check_drtg_and_year_ranges
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.bball_ref_lookup import _lookup
     from opponent_adjusted_nba_scraper.bball_ref_utils import _bball_ref_get_dataframe, \
         _get_player_suffix, _bball_ref_add_possessions
-    from opponent_adjusted_nba_scraper.constants import Mode, SeasonType, Site, \
-        _desired_log_columns
+    from opponent_adjusted_nba_scraper.constants import _desired_log_columns
     from opponent_adjusted_nba_scraper.nba_stats_request_constants import _standard_header, \
         _player_logs_params
     from opponent_adjusted_nba_scraper.nba_stats_utils import _format_year, \
         _nba_stats_get_dataframe, _nba_stats_add_possessions
+    from opponent_adjusted_nba_scraper.parameters import Mode, SeasonType, Site
     from opponent_adjusted_nba_scraper.teams import teams_within_drtg
     from opponent_adjusted_nba_scraper.util import _calculate_stats, _print_no_logs, \
         _check_drtg_and_year_ranges
@@ -64,78 +63,69 @@ def _bball_ref_player_game_logs(_name, year_range, season_type=SeasonType.defaul
 
     _check_drtg_and_year_ranges(year_range, [0, 1], Site.basketball_reference)
 
-    _name = _lookup(_name, ask_matches=False)
+    # _name = _lookup(_name, ask_matches=False)
     suffix = _get_player_suffix(_name)[:-5]
     iterator = tqdm(range(year_range[0], year_range[1] + 1),
                     desc="Loading player game logs...", ncols=75)
 
     dfs = []
-    for curr in iterator:
+    for curr_year in iterator:
         if season_type == SeasonType.playoffs:
             url = f'https://www.basketball-reference.com{suffix}/gamelog-playoffs/'
-            data_pd = _bball_ref_get_dataframe(url, "pgl_basic_playoffs")\
-                .drop(["G", "G#", "Series", "", "GS"], axis=1)\
-                .replace("", np.nan)
+            attr_id = "player_game_log_post"
         else:
-            url = f'https://www.basketball-reference.com/{suffix}/gamelog/{curr}'
-            data_pd = _bball_ref_get_dataframe(url, "pgl_basic")\
-                .drop(["G", "Age", "", "GS"], axis=1)\
-                .replace("", np.nan)
+            url = f'https://www.basketball-reference.com{suffix}/gamelog/{curr_year}'
+            attr_id = "player_game_log_reg"
 
-        data_pd["SEASON"] = data_pd[data_pd.columns[0]].str[:4].astype("string")
-        data_pd = data_pd.iloc[:, [len(data_pd.columns) - 1] +
-                               list(range(len(data_pd.columns) - 1))]
+        data_pd = _bball_ref_get_dataframe(url, attr_id)\
+            .drop(columns=["Gtm", "", "GS", "Result"], axis=1)\
+            .replace("", np.nan)
 
-        data_pd.dropna(subset=["AST"], inplace=True)
         data_pd = data_pd[~(
-            (data_pd["AST"].str.contains("Inactive")) |
-            (data_pd["AST"].str.contains("AST")) |
-            (data_pd["AST"].str.contains("Did Not Play")) |
-            (data_pd["AST"].str.contains("Did Not Dress"))
+            (data_pd["Gcar"].astype(str).str.contains("nan")) |
+            (data_pd["Gcar"].astype(str).str.contains("none"))
             )]\
             .rename(columns={
                 data_pd.columns[1]: "DATE",
-                "Tm": "TEAM",
+                "Team": "TEAM",
                 "Opp": "MATCHUP",
-                "MP": "MIN"})
+                "MP": "MIN"})\
+            .dropna(subset=["AST"])\
+            .drop(columns=["Gcar"])
 
-        data_pd["minutes"] = data_pd["MIN"].str.extract(r'([1-9]*[0-9]):')
-        data_pd["seconds"] = data_pd["MIN"].str.extract(r':([0-5][0-9])')
+        # Calculate Season from Date column instead of using `curr_year` because playoff
+        # game logs shows for all years
+        data_pd["SEASON"] = curr_year
+        data_pd["MIN"] = data_pd["MIN"].str.extract(r'([1-9]*[0-9]):').astype("int32") + \
+                        data_pd["MIN"].str.extract(r':([0-5][0-9])').astype("int32") / 60
 
-        data_pd["MIN"] = data_pd["minutes"].astype("int32") + \
-                        (data_pd["seconds"].astype("int32") / 60)
-
-        data_pd = data_pd.drop(columns=["minutes", "seconds"])
         convert_dict = {
-        'SEASON': 'int32', 'DATE': 'string', 'TEAM': 'string', 'MATCHUP': 'string',
-        'MIN': 'float64','FG': 'int32', 'FGA': 'int32', 'FG%': 'float64', '3P': 'int32',
-        '3PA': 'int32', '3P%': 'float64', 'FT': 'int32', 'FTA': 'int32', 'FT%': 'float64',
-        'ORB': 'int32', 'DRB': 'int32', 'TRB': 'int32', 'AST' : 'int32', 'STL': 'int32',
-        'BLK': 'int32', 'TOV' : 'int32', 'PF': 'int32', 'PTS': 'int32', 'GmSc': 'float64',
-        '+/-' : 'int32'
+            'SEASON': 'int32', 'DATE': 'string', 'TEAM': 'string', 'MATCHUP': 'string',
+            'MIN': 'float64','FG': 'int32', 'FGA': 'int32', 'FG%': 'float64', '3P': 'float32',
+            '3PA': 'float32', '3P%': 'float64', 'FT': 'int32', 'FTA': 'int32', 'FT%': 'float32',
+            'ORB': 'float32', 'DRB': 'float32', 'TRB': 'int32', 'AST' : 'int32', 'STL': 'float32',
+            'BLK': 'float32', 'TOV' : 'float32', 'PF': 'int32', 'PTS': 'int32', 'GmSc': 'float64',
+            '+/-' : 'int32', '2P': 'float32', "2PA": 'float32', '2P%': 'float64', 'eFG%': "float64"
         }
-        keep = {key: convert_dict[key] for key in data_pd.columns.values}
-        data_pd = data_pd.astype(keep)
-        if season_type == SeasonType.default:
-            data_pd["SEASON"] = curr
-        data_pd = data_pd.query("SEASON >= @year_range[0] and SEASON <= @year_range[1]")
+        data_pd = data_pd.astype({key: convert_dict[key] for key in data_pd.columns.values})
+
         dfs.append(data_pd)
+
         if season_type == SeasonType.playoffs:
             for _ in iterator:
                 pass
             break
-    result = pd.concat(dfs)
-    result = result.reset_index(drop=True)
+        continue
+
+    result = pd.concat(dfs)\
+        .reset_index(drop=True, )\
+        .query("SEASON >= @year_range[0] and SEASON <= @year_range[1]")
     result.index += 1
-    for i, col in enumerate(_desired_log_columns()):
-        if col not in result.columns.values:
-            if col == "NAME":
-                result[col] = _name
-            else:
-                result[col] = np.nan
-            left = list(range(i))
-            right = list(range(i, len(result.columns) - 1))
-            result = result.iloc[:, left + [len(result.columns) - 1] + right]
+
+    # Some stats were not tracked in the 1970s, so we add those columns with value np.nan
+    result["NAME"] = _name
+    result.loc[:, list(set(_desired_log_columns()) - set(result.columns.values))] = np.nan
+    result = result[_desired_log_columns()]
 
     if len(result) == 0:
         _print_no_logs(_name)
@@ -145,38 +135,38 @@ def _nba_stats_player_game_logs(_name, year_range, season_type=SeasonType.defaul
 
     _check_drtg_and_year_ranges(year_range, [0, 1], Site.nba_stats)
 
-    curr_year = year_range[0]
+    iterator = tqdm(range(year_range[0], year_range[1] + 1),
+                    desc="Loading player game logs...", ncols=75)
+
     dfs = []
-    while curr_year <= year_range[1]:
-        year = _format_year(curr_year)
+    for curr_year in iterator:
+        curr_year = _format_year(curr_year)
         url = 'https://stats.nba.com/stats/playergamelogs'
-        params = _player_logs_params(year, season_type)
+        params = _player_logs_params(curr_year, season_type)
         year_df = _nba_stats_get_dataframe(url, _standard_header(), params)
-        year_df = year_df.query('PLAYER_NAME == @_name')
-        year_df = (year_df[['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME',
-                'MATCHUP', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA',
-                'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF', 'PTS',
-                'PLUS_MINUS']]
-            .rename(columns={'SEASON_YEAR':'SEASON', 'TEAM_ABBREVIATION': 'TEAM',
-                             'PLUS_MINUS':'+/-', 'FG_PCT': 'FG%', 'FG3M': '3PM', 'FG3A': '3PA',
-                             'FG3_PCT': '3P%', 'FT_PCT': 'FT%', 'REB': 'TRB'})
-            .drop('TEAM_NAME', axis=1)[::-1]
-        )
+        year_df = year_df.query('PLAYER_NAME == @_name')\
+            [['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'MATCHUP', 'MIN',
+              'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB',
+              'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PF', 'PTS', 'PLUS_MINUS']]\
+            .rename(columns={
+                'SEASON_YEAR':'SEASON', 'TEAM_ABBREVIATION': 'TEAM', 'PLUS_MINUS':'+/-',
+                'FG_PCT': 'FG%', 'FG3M': '3PM', 'FG3A': '3PA', 'FG3_PCT': '3P%', 'FT_PCT': 'FT%',
+                'REB': 'TRB'})[::-1]
         year_df['MATCHUP'] = year_df['MATCHUP'].str[-3:]
+
         dfs.append(year_df)
-        curr_year += 1
+
     if len(dfs) == 0:
         return pd.DataFrame()
 
-    result = pd.concat(dfs)
-    result = result.reset_index(drop=True)
-    convert_dict = {
-        'FGM': 'int32', 'FGA': 'int32', '3PM': 'int32', '3PA': 'int32', 'FTA': 'int32',
-        'FTM': 'int32', 'OREB': 'int32', 'DREB': 'int32', 'TRB': 'int32', 'AST': 'int32',
-        'TOV': 'int32', 'STL': 'int32', 'BLK': 'int32', 'PF': 'int32', 'PTS': 'int32',
-        '+/-': 'int32', 'SEASON': 'object'
-    }
-    result = result.astype(convert_dict)
+    result = pd.concat(dfs)\
+        .reset_index(drop=True)\
+        .astype({
+            'FGM': 'int32', 'FGA': 'int32', '3PM': 'int32', '3PA': 'int32', 'FTA': 'int32',
+            'FTM': 'int32', 'OREB': 'int32', 'DREB': 'int32', 'TRB': 'int32', 'AST': 'int32',
+            'TOV': 'int32', 'STL': 'int32', 'BLK': 'int32', 'PF': 'int32', 'PTS': 'int32',
+            '+/-': 'int32', 'SEASON': 'object'})
+
     result['SEASON'] = result['SEASON'].str[:4].astype(int) + 1
     result.index += 1
     return result
