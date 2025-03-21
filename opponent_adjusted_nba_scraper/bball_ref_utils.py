@@ -9,11 +9,11 @@ from tqdm import tqdm
 import unidecode
 
 try:
+    from parameters import SeasonType
     from util import _request_get_wrapper
-    from constants import SeasonType
 except ModuleNotFoundError:
+    from opponent_adjusted_nba_scraper.parameters import SeasonType
     from opponent_adjusted_nba_scraper.util import _request_get_wrapper
-    from opponent_adjusted_nba_scraper.constants import SeasonType
 
 def _bball_ref_get_dataframe(url: str, attrs_id: str) -> pd.DataFrame:
     headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
