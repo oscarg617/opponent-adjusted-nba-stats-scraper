@@ -1,41 +1,9 @@
-'''Constants and types.'''
-from dataclasses import dataclass
+'''Constants.'''
 
-@dataclass
-class Mode:
-    '''
-    Class for choosing stat modes.
-    '''
-
-    per_game = "PerGame"
-    per_100_poss = "Per100Poss"
-    pace_adj = "PaceAdjusted"
-    opp_adj = "OpponentAdjusted"
-    opp_pace_adj = "OpponentAndPaceAdjusted"
-
-    default = per_game
-
-@dataclass
-class SeasonType:
-    '''
-    Class for choosing season types.
-    '''
-
-    regular_season = "Regular Season"
-    playoffs = "Playoffs"
-
-    default = regular_season
-
-@dataclass
-class Site:
-    '''
-    Class for choosing site to collect data from.
-    '''
-
-    basketball_reference = "Basketball Reference"
-    nba_stats = "NBA Stats"
-
-    default = basketball_reference
+try:
+    from parameters import Site
+except ModuleNotFoundError:
+    from opponent_adjusted_nba_scraper.parameters import Site
 
 def _teams() -> dict:
     return {"ATL":'37', "BOS":'38', "BKN":'51', "CHA":'66', "CHI":'41', "CLE":'39', "DAL":'42',
@@ -45,7 +13,13 @@ def _teams() -> dict:
             "UTA":'62', "WAS":'64', "NJN":"51", "CHO":"66", "VAN":"63", "NOH":"40", "SEA":"60",
             "NOK":'40'}
 
-def _team_to_team_abbr() -> dict:
+def _team_to_team_abbr(site=Site.default) -> dict:
+
+    if site == Site.basketball_reference:
+        phoenix_suns = "PHO"
+    else:
+        phoenix_suns = "PHX"
+
     return {
         'ATLANTA HAWKS': 'ATL',
         'BOSTON CELTICS': 'BOS',
@@ -78,7 +52,7 @@ def _team_to_team_abbr() -> dict:
         'SEATTLE SUPERSONICS' : 'SEA',
         'ORLANDO MAGIC' : 'ORL',
         'PHILADELPHIA 76ERS' : 'PHI',
-        'PHOENIX SUNS' : 'PHO',
+        'PHOENIX SUNS' : phoenix_suns,
         'PORTLAND TRAIL BLAZERS' : 'POR',
         'SACRAMENTO KINGS' : 'SAC',
         'SAN ANTONIO SPURS' : 'SAS',
