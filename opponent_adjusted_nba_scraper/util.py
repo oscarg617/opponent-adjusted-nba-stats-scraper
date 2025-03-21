@@ -8,9 +8,9 @@ import pandas as pd
 import unidecode
 
 try:
-    from constants import Mode, SeasonType, Site
+    from parameters import Mode, SeasonType, Site
 except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.constants import Mode, SeasonType, Site
+    from opponent_adjusted_nba_scraper.parameters import Mode, SeasonType, Site
 
 
 def _calculate_stats(_name: str, logs: pd.DataFrame, teams_df: pd.DataFrame, \
@@ -35,9 +35,9 @@ def _calculate_stats(_name: str, logs: pd.DataFrame, teams_df: pd.DataFrame, \
         possessions = add_possessions(_name, logs, teams_dict, season_type)
         points = f"{round((logs['PTS'].sum() / possessions) * 100, 1)} points per 100 possessions"
         rebounds = f"{round((logs['TRB'].sum() / possessions) * 100, 1)}" + \
-            "rebounds per 100 possessions"
+            " rebounds per 100 possessions"
         assists = f"{round((logs['AST'].sum() / possessions) * 100, 1)}" + \
-            "assists per 100 possessions"
+            " assists per 100 possessions"
     elif data_format == Mode.pace_adj:
         possessions = add_possessions(_name, logs, teams_dict, season_type)
         min_ratio = logs['MIN'].mean() / 48
@@ -164,7 +164,7 @@ def _check_drtg_and_year_ranges(year_range: list, drtg_range: list, site: Site):
             sys.exit(f"Required data is not avaiable before the 1970-71 season ({site}).")
     elif site == Site.nba_stats:
         if year_range[0] < 1997:
-            sys.exit(f"Required data is not avaiable before the 1970-71 season ({site}).")
+            sys.exit(f"Required data is not avaiable before the 1996-97 season ({site}).")
 
 
 def _print_no_logs(name):
@@ -174,6 +174,7 @@ def _print_no_logs(name):
 @sleep_and_retry
 @limits(calls=19, period=60)
 def _request_get_wrapper(function: Callable, url: str, headers=None, params=(), check_error=False):
+
     if not headers:
         headers = {}
 
