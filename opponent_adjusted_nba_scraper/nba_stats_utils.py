@@ -5,12 +5,14 @@ from tqdm import tqdm
 
 try:
     from nba_stats_request_constants import _standard_header, _player_per_poss_param
-    from constants import _teams, SeasonType
+    from constants import _teams
+    from parameters import SeasonType
     from util import _request_get_wrapper
 except ModuleNotFoundError:
     from opponent_adjusted_nba_scraper.nba_stats_request_constants import _standard_header, \
         _player_per_poss_param
-    from opponent_adjusted_nba_scraper.constants import _teams, SeasonType
+    from opponent_adjusted_nba_scraper.constants import _teams
+    from opponent_adjusted_nba_scraper.parameters import SeasonType
     from opponent_adjusted_nba_scraper.util import _request_get_wrapper
 
 def _nba_stats_get_dataframe(url, headers, params):
