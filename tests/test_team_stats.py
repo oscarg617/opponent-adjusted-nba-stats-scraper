@@ -5,7 +5,7 @@ from ..opponent_adjusted_nba_scraper.teams import teams_within_drtg
 from ..opponent_adjusted_nba_scraper.players import player_game_logs
 from ..opponent_adjusted_nba_scraper.util import _teams_df_to_dict, \
     _filter_logs_through_teams, _filter_teams_through_logs
-from ..opponent_adjusted_nba_scraper.constants import SeasonType
+from ..opponent_adjusted_nba_scraper.library.constants import SeasonType
 
 class TestTeamStats(unittest.TestCase):
     '''Tests for each method in opponent_adjusted_nba_scraper.bball_ref.players'''

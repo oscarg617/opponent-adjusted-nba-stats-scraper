@@ -2,7 +2,7 @@
 import unittest
 
 from ..opponent_adjusted_nba_scraper.players import player_game_logs, player_stats
-from ..opponent_adjusted_nba_scraper.constants import Mode, SeasonType
+from ..opponent_adjusted_nba_scraper.library.constants import Mode, SeasonType
 
 class TestPlayerStats(unittest.TestCase):
     '''Tests for each method in opponent_adjusted_nba_scraper.bball_ref.players'''

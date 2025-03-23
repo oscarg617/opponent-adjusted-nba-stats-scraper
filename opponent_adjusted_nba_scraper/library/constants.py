@@ -1,11 +1,8 @@
 '''Constants.'''
+from library.arguments import Site
 
-try:
-    from parameters import Site
-except ModuleNotFoundError:
-    from opponent_adjusted_nba_scraper.parameters import Site
-
-def _teams() -> dict:
+def teams() -> dict:
+    '''Offset for each team in determining team id for nba-stats'''
     return {"ATL":'37', "BOS":'38', "BKN":'51', "CHA":'66', "CHI":'41', "CLE":'39', "DAL":'42',
             "DEN":'43', "DET":'65', "GSW":'44', "HOU":'45', "IND":'54', "LAC":'46', "LAL":'47',
             "MEM":'63', "MIA":'48', "MIL":'49', "MIN":'50', "NOP":'40', "NYK":'52', "OKC":'60',
@@ -13,8 +10,8 @@ def _teams() -> dict:
             "UTA":'62', "WAS":'64', "NJN":"51", "CHO":"66", "VAN":"63", "NOH":"40", "SEA":"60",
             "NOK":'40'}
 
-def _team_to_team_abbr(site=Site.default) -> dict:
-
+def team_to_team_abbr(site=Site.default) -> dict:
+    '''Dictionary for mapping teams to tricodes'''
     if site == Site.basketball_reference:
         phoenix_suns = "PHO"
     else:
@@ -63,8 +60,3 @@ def _team_to_team_abbr(site=Site.default) -> dict:
         'WASHINGTON BULLETS': 'WSB',
         'WASHINGTON WIZARDS' : 'WAS',
     }
-
-def _desired_log_columns() -> list:
-    return ['SEASON', 'DATE', 'NAME', 'TEAM', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%', '3P', '3PA',
-            '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK', 'TOV', 'PF',
-            'PTS', 'GmSc', '+/-']
