@@ -5,12 +5,20 @@ import pandas as pd
 from tqdm import tqdm
 from bs4 import BeautifulSoup
 
-from library.arguments import SeasonType, Mode
-from library.request import Request
-from library import constants
-from endpoints._base import Endpoint
-from endpoints.playerlogs import PlayerLogs
-from endpoints.teams import Teams
+try:
+    from library.arguments import SeasonType, Mode
+    from library.request import Request
+    from library import constants
+    from _base import Endpoint
+    from playerlogs import PlayerLogs
+    from teams import Teams
+except ImportError:
+    from opponent_adjusted_nba_scraper.library.arguments import SeasonType, Mode
+    from opponent_adjusted_nba_scraper.library.request import Request
+    from opponent_adjusted_nba_scraper.library import constants
+    from opponent_adjusted_nba_scraper.endpoints._base import Endpoint
+    from opponent_adjusted_nba_scraper.endpoints.playerlogs import PlayerLogs
+    from opponent_adjusted_nba_scraper.endpoints.teams import Teams
 
 class PlayerStats(Endpoint):
     '''Calculates players stats against opponents within a given range of defensive strength'''
@@ -56,7 +64,7 @@ class PlayerStats(Endpoint):
             points, rebounds, assists = self._per_game_stats(logs_df)
         elif self.data_format == Mode.per_100_poss:
             points, rebounds, assists = self._per_100_poss_stats(
-                logs_df, teams_dict, self.season_type)
+                logs_df, teams_dict, add_possessions)
         elif self.data_format == Mode.pace_adj:
             points, rebounds, assists = self._pace_adj_stats(
                 logs_df, teams_dict, add_possessions)
@@ -188,9 +196,6 @@ class PlayerStats(Endpoint):
         _team_dict,
         _season_type
     ):
-        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36" + \
-        " (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"}
-
         total_poss = 0
         logs_df["DATE"] = pd.to_datetime(logs_df["DATE"])
         logs_df["GAME_SUFFIX"] = ""

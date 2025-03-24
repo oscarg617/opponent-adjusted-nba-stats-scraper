@@ -1,5 +1,8 @@
 '''Constants.'''
-from library.arguments import Site
+try:
+    from library.arguments import Site
+except ImportError:
+    from opponent_adjusted_nba_scraper.library.arguments import Site
 
 def teams() -> dict:
     '''Offset for each team in determining team id for nba-stats'''

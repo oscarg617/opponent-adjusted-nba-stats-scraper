@@ -1,7 +1,11 @@
 '''Teams Endpoint'''
 import os
 import pandas as pd
-from endpoints._base import Endpoint
+
+try:
+    from ._base import Endpoint
+except ImportError:
+    from opponent_adjusted_nba_scraper.endpoints._base import Endpoint
 
 class Teams(Endpoint):
     '''Endpoint for finding teams with defensive strength that falls within a desired range'''
@@ -28,7 +32,7 @@ class Teams(Endpoint):
         return self._read_path()
 
     def _read_path(self):
-        teams_df = pd.read_csv(self.path)
+        teams_df = pd.read_csv(self.path).drop(columns="Unnamed: 0")
         teams_df = teams_df[
             (teams_df["SEASON"] >= self.year_range[0]) &
             (teams_df["SEASON"] <= self.year_range[1]) &

@@ -4,7 +4,11 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from ratelimit import sleep_and_retry, limits
-from opponent_adjusted_nba_scraper.library import parameters
+
+try:
+    from library import parameters
+except ImportError:
+    from opponent_adjusted_nba_scraper.library import parameters
 
 class Request:
     '''Class used for sending requests'''

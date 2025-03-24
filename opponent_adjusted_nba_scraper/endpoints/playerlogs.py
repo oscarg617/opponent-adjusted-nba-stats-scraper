@@ -5,9 +5,14 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
-from endpoints._base import Endpoint
-from library.arguments import SeasonType
-from library.request import Request
+try:
+    from _base import Endpoint
+    from library.arguments import SeasonType
+    from library.request import Request
+except ImportError:
+    from opponent_adjusted_nba_scraper.endpoints._base import Endpoint
+    from opponent_adjusted_nba_scraper.library.arguments import SeasonType
+    from opponent_adjusted_nba_scraper.library.request import Request
 
 class PlayerLogs(Endpoint):
     '''Finds a player's game logs within a given range of years'''
