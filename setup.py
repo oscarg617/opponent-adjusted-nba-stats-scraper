@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setuptools.setup(
     name="dans",
-    version="1.0.0",
+    version="1.0.1",
     author="Oscar Gutierrez Altamirano",
     author_email="oscargutierreza617@gmail.com",
     description="A package for scraping data from basketball-reference.com and stats.nba.com" + \
