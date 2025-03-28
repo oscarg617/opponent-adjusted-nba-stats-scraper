@@ -5,12 +5,12 @@ with open("README.md", "r", encoding='utf-8') as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="opponent_adjusted_nba_scraper",
-    version="1.0.24",
+    name="dans",
+    version="1.0",
     author="Oscar Gutierrez Altamirano",
     author_email="oscargutierreza617@gmail.com",
-    description="A Python client for scraping data from stats.nba.com and \
-        opponent-adjusting players' stats.",
+    description="A package for scraping data from basketball-reference.com and stats.nba.com" + \
+        "to provide opponent-adjusted statistics.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
@@ -37,5 +37,5 @@ setuptools.setup(
         "basketball",
         ],
 
-    package_data = {'opponent_adjusted_nba_scraper': ['opponent_adjusted_nba_scraper/utils/*.txt']}
+    package_data = {'dans': ['dans/utils/*.txt']}
 )
