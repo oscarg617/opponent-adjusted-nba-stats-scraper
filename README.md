@@ -1,26 +1,37 @@
-# Opponent Adjusted NBA Scraper
+# Defense Adjusted NBA Stats
 
-This is a package that collects data from [stats.nba.com](https://www.stats.nba.com) and provides methods focused on adjusting a player's statistics by their opponents defensive strength.
+This is a package that collects data from [basketball-reference.com](https://www.basketball-reference.com) and [stats.nba.com](https://www.stats.nba.com) and provides endpoints that adjust a player's statistics depending on their opponents defensive strength.
+
+## Why adjust stats?
+
+Numbers at face-value don't always tell the full story. For example, if player A scores 30 points on 50% from the field, and player B scores 27 points on 47% from the field, we could come to the conclusion that player A had a better scoring game.
+
+However, what if player B faced one of the best defensive teams in the league, and player A faced a mediocre defensive team? How does that change how we view those performances?
+
+This package attempts to provide a more even playing field with statistics by using the opponent team's defensive to adjust a player scoring and efficiency. For more details about how stats are "adjusted", see the methodology [here](METHODOLOGY.md).
+
+Stats from basketball-reference for this package go back to the 1970-71 season, and stats from nba-stats only go back to the 1996-97 season.
+
+You can find the full details for this API [here](API.md).
 
 ## Installing
 ### Via `pip`
 Install using the following command:
 
 ```
-pip install opponent_adjusted_nba_scraper
+pip install dans
 ```
 
 ### Via GitHub
 Or, you can clone this repo to a Git repository on your local machine.
 
-## About
 
-The stats required for this scraper only go back to the 1996-97 season, which would not have been the case if I had used [basketball-reference](https://www.basketball-reference.com). However, I couldn't find a way to access playoff stats on bball-ref, so I'm hoping to find a way to access these stats and update this scraper to allow for searches before the '97 season.
+## License & Terms of Use
 
-## API
+## API  Package
 
-You can find the full details for this API [here](API.md).
+The `dans` package is Open Source with an [MIT License](LICENSE).
 
-## Credits
+## NBA.com
 
-I borrowed the implementation for `lookup.py` and the names of all NBA players up to the 2020-21 season in `names.txt` from [Vishaal Agartha](https://github.com/vishaalagartha/basketball_reference_scraper).
+NBA.com has a [Terms of Use](https://www.nba.com/termsofuse) regarding the use of the NBA’s digital platforms.

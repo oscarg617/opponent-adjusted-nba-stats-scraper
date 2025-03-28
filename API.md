@@ -1,69 +1,71 @@
-## Teams
+## Player Stats
 
 Usage
 
 ```
-from opponent-adjusted-nba-scraper.teams import teams_within_drtg, filter_teams_through_logs, filter_logs_through_teams
+from dans.endpoints.playerstats import PlayerStats
 ```
 
-### `teams_within_drtg(min_drtg, max_drtg, first_year, last_year, season_type='Playoffs')`
-
-Parameters:
-  - `min_drtg` - Minimum opponent defensive-rating (e.g. `95`, `105`)
-  - `max_drtg` - Maximum opponent defensive-rating (e.g. `105`, `115`)
-  - `first_year` - Desired end year of first season (e.g. `1998`, `2012`)
-  - `last_year` - Desired end year of last season (e.g. `2004`, `2019`)
-  - `season_type` - One of `'Regular Season'|'Playoffs'`. Default value is `'Playoffs'`
-
-Returns:
-
-  A Pandas Dataframe of every team from `first_year` to `last_year` with a defensive rating between `min_drtg` and `max_drtg`, containing the following columns:
-
-  ```
-  ['SEASON_YEAR', 'TEAM_ABBR', 'DEF_RATING', 'OPP_TS_PCT']
-  ```
-
-## Players
-
-Usage
-
-```
-from basketball_reference_scraper.players import player_game_logs, player_stats
-```
-
-### `player_game_logs(name, first_year, last_year, season_type='Playoffs')`
-
-Parameters:
-  - `name` - Player full name (e.g. `'Anthony Edwards'`)
-  - `first_year` - Desired end year of first season (e.g. `2007`, `2020`)
-  - `last_year` - Desired end year of last season (e.g. `2003`, `2015`)
-  - `season_type` - One of `'Regular Season'|'Playoffs'`. Default value is `'Playoffs'`
-
-Returns:
-
-  A Pandas Dataframe of the player's game logs from `first_year` to `last_year` against teams with a defensive rating between `min_drtg` and `max_drtg`, containing the following columns:
-
-  ```
-  ['SEASON_YEAR', 'PLAYER_NAME', 'TEAM_ABBREVIATION', 'TEAM_NAME', 'MATCHUP', 'WL', 'MIN', 'FGM', 'FGA', 'FG_PCT', 'FG3M', 'FG3A', 'FG3_PCT','FTM', 'FTA', 'FT_PCT', 'OREB', 'DREB', 'REB', 'AST', 'TOV', 'STL', 'BLK', 'PTS']
-  ```
-
-### `player_stats(name, first_year, last_year, min_drtg, max_drtg, data_format="OPP_INF", season_type="Playoffs", printStats=True)`
+### `PlayerStats(name, year_range, drtg_range, data_format, season_type`
 
 Parameters:
   - `name` - Player full name (e.g. `'Giannis Antetokounmpo'`)
-  - `first_year` - Desired end year of first season (e.g. `2007`, `2020`)
-  - `last_year` - Desired end year of last season (e.g. `2003`, `2015`)
-  - `min_drtg` - Minimum opponent defensive-rating (e.g. `95`, `105`)
-  - `max_drtg` - Maximum opponent defensive-rating (e.g. `105`, `115`)
-  - `data_format` - One of `'PER_GAME'|'PER_POSS'|'OPP_ADJ'|'OPP_INF'`. `'OPP_ADJ'`: opponent-adjusted per game; `'OPP_INF'`: opponent and inflation-adjusted per game. Default value is `'OPP_INF'`
-  - `season_type` - One of `'Regular Season'|'Playoffs'`. Default value is `'Playoffs'`
-  - `printStats` - One of `True|False`. Default value is `True`
+  - `year_range (type: inclusive list)` - Range of years to search for logs (e.g. `[2019, 2021]`)
+  - `drtg_range (type: exclusive list)` - Range of defensive strength in terms of Defensive Rating (e.g. `[107.5, 110]`)
+  - `data_format` - One of `DataFormat.per_game` | `DataFormat.per_100_poss` | `DataFormat.opp_adj` | `DataFormat.pace_adj` | `DataFormat.opp_pace_adj` Default value is `DataFormat.per_game`
+  - `season_type (type: SeasonType)` - One of `SeasonType.regular_season | SeasonType.playoffs`. Default value is `SeasonType.regular_season`
 
 Returns:
 
-  A list containing the player's stats, with the first three stats dependent on `data_format`:
+  A Pandas Dataframe containing the player's basic averages, with the first three stats dependent on `data_format`:
 
   ```
   [points, rebounds, assists, true shooting percentage, relative true shooting percentage, opponent defensive rating]
   ```
   
+## Player Logs
+
+Usage
+
+```
+from dans.endpoints.playerlogs import PlayerLogs
+```
+
+### `PlayerLogs(name, year_range, season_type)`
+
+Parameters:
+  - `name (type: string)` - Player full name (e.g. `'Anthony Edwards'`)
+  - `year_range (type: inclusive list)` - Range of years to search for logs (e.g. `[2020, 2024]`)
+  - `season_type (type: SeasonType)` - One of `SeasonType.regular_season | SeasonType.playoffs`. Default value is `SeasonType.regular_season`
+
+Returns:
+
+  A Pandas Dataframe of the player's game logs in the seasons `year_range`, containing the following columns:
+
+  ```
+['SEASON', 'DATE', 'NAME', 'TEAM', 'HOME', 'MATCHUP', 'MIN', 'FG', 'FGA', 'FG%',
+ '3P', '3PA', '3P%', 'FT', 'FTA', 'FT%', 'ORB', 'DRB', 'TRB', 'AST', 'STL', 'BLK',
+ 'TOV', 'PF', 'PTS', '+/-',]
+  ```
+
+## Teams
+
+Usage
+
+```
+from dans.endpoints.teams import Teams
+```
+
+### `Teams(year_range, drtg_range)`
+
+Parameters:
+  - `year_range (type: inclusive list)` Range of years to search for teams (e.g. `[1995, 2007]`)
+  - `drtg_range (type: exclusive list)` - Range of defensive strength in terms of Defensive Rating (e.g. `[105, 110]`)
+
+Returns:
+
+  A Pandas Dataframe of every team in the seasons `year_range` with a defensive rating falling within `drtg_range` exclusive. The Dataframe contains the following columns:
+
+  ```
+  ['SEASON', 'TEAM', 'DRTG', 'OPP_TS']
+  ```
